@@ -11,7 +11,6 @@ RUN echo $GOPATH
 
 COPY . /winglets_web
 WORKDIR /winglets_web
-RUN rm -rf .git
 
 RUN go mod download
 
