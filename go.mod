@@ -57,4 +57,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-require golang.org/x/text v0.13.0 // indirect
+require (
+	github.com/google/uuid v1.6.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
+)

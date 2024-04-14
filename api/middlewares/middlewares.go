@@ -1,6 +1,8 @@
 package middlewares
 
-import "go.uber.org/fx"
+import (
+	"go.uber.org/fx"
+)
 
 // Module Middleware exported
 var Module = fx.Options(
@@ -21,9 +23,11 @@ type Middlewares []IMiddleware
 // Register the middleware that should be applied directly (globally)
 func NewMiddlewares(
 	corsMiddleware *CorsMiddleware,
+	jwtMiddleware *JWTMiddleware,
 ) Middlewares {
 	return Middlewares{
 		corsMiddleware,
+		jwtMiddleware,
 	}
 }
 

@@ -15,4 +15,4 @@ RUN rm -rf .git
 
 RUN go mod download
 
-CMD sh /winglets_web/docker/run.sh
+CMD /winglets_web/docker/run.sh

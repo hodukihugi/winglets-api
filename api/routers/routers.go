@@ -1,11 +1,14 @@
 package routers
 
-import "go.uber.org/fx"
+import (
+	"go.uber.org/fx"
+)
 
 // Module exports dependency to container
 var Module = fx.Options(
 	fx.Provide(NewUserRouter),
 	fx.Provide(NewAuthRouter),
+	fx.Provide(NewProfileRouter),
 	fx.Provide(NewRouters),
 )
 
@@ -21,10 +24,12 @@ type Router interface {
 func NewRouters(
 	userRouter *UserRouter,
 	authRouter *AuthRouter,
+	profileRouter *ProfileRouter,
 ) Routers {
 	return Routers{
 		userRouter,
 		authRouter,
+		profileRouter,
 	}
 }
 

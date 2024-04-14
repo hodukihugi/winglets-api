@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/google/uuid"
 	"github.com/hodukihugi/winglets-api/core"
 	"github.com/hodukihugi/winglets-api/models"
 	"gorm.io/gorm"
@@ -34,6 +35,7 @@ func NewUserRepository(db *core.Database, logger *core.Logger) IUserRepository {
 
 func (r *UserRepository) Create(user models.User) error {
 	user.Email = strings.ToLower(user.Email)
+	user.ID = uuid.New().String()
 	return r.DB.Create(&user).Error
 }
 
@@ -56,7 +58,8 @@ func (r *UserRepository) filterUser(filter models.OneUserFilter, tx *gorm.DB) {
 	if filter.Email != "" {
 		tx.Where("users.email = ?", filter.Email)
 	}
-	if filter.ID != 0 {
+
+	if filter.ID != "" {
 		tx.Where("users.id = ?", filter.ID)
 	}
 }

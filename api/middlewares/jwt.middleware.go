@@ -3,29 +3,32 @@ package middlewares
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"github.com/hodukihugi/winglets-api/constants"
 	"github.com/hodukihugi/winglets-api/models"
 	"github.com/hodukihugi/winglets-api/services"
+	"github.com/hodukihugi/winglets-api/utils"
 	"net/http"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/hodukihugi/winglets-api/core"
 )
 
 // JWTMiddleware middleware for jwt authentication
 type JWTMiddleware struct {
+	env     *core.Env
 	service services.IAuthService
 	logger  *core.Logger
 }
 
 // NewJWTMiddleware creates new jwt auth middleware
 func NewJWTMiddleware(
+	env *core.Env,
 	logger *core.Logger,
 	service services.IAuthService,
 ) *JWTMiddleware {
 	return &JWTMiddleware{
+		env:     env,
 		service: service,
 		logger:  logger,
 	}
@@ -76,5 +79,45 @@ func (m *JWTMiddleware) Handler() gin.HandlerFunc {
 		})
 		c.Abort()
 		return
+	}
+}
+
+func (m *JWTMiddleware) AuthorizationWithCookie() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		accessToken, err := c.Cookie("accessCookie")
+		if err != nil {
+			refreshToken, err := c.Cookie("refreshCookie")
+			if err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication failed"})
+				c.Abort()
+				return
+			}
+
+			payload, err := m.service.Authorize(refreshToken)
+			if err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token expired"})
+				c.Abort()
+				return
+			}
+
+			accessToken, _, err := m.service.Refresh(models.User{
+				Email: payload.UserEmail,
+				ID:    payload.UserID,
+			})
+
+			utils.AttachCookiesToResponse(m.env, accessToken, refreshToken, c)
+			c.Set(constants.CtxKey_JWTClaim, payload)
+			c.Next()
+		}
+
+		payload, err := m.service.Authorize(accessToken)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Access token expired"})
+			c.Abort()
+			return
+		}
+
+		c.Set(constants.CtxKey_JWTClaim, payload)
+		c.Next()
 	}
 }
