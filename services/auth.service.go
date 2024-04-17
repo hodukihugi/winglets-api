@@ -82,10 +82,8 @@ func (s *AuthService) Register(request models.RegisterRequest) error {
 	}
 
 	return s.userRepo.Create(models.User{
-		Name:     request.Name,
 		Email:    request.Email,
 		Password: hashedPassword,
-		Birthday: time.Unix(request.BirthdayInSeconds, 0),
 	})
 }
 
@@ -101,7 +99,7 @@ func (s *AuthService) signJWT(user models.User, expirationPeriod time.Duration) 
 			ExpiresAt: exp,
 			IssuedAt:  now.Unix(),
 			NotBefore: now.Unix(),
-			Issuer:    "innov8tor-web",
+			Issuer:    "winglets-web",
 		},
 	}).SignedString([]byte(s.env.JWTSecret))
 	return jwtToken, exp, err

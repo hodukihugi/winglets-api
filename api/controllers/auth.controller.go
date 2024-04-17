@@ -93,12 +93,12 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 		return
 	}
 
+	utils.AttachCookiesToResponse(c.env, accessToken, refreshToken, ctx)
 	ctx.JSON(http.StatusCreated, models.HTTPResponse{Message: "success", Data: map[string]interface{}{
 		"access_token":    accessToken,
 		"refresh_token":   refreshToken,
 		"access_expired":  accessExpired,
 		"refresh_expired": refreshExpired,
-		//"user":            models.SerializableNestedUser{User: user.Serialize()},
 	}})
 	return
 }
@@ -107,17 +107,19 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 func (c *AuthController) Refresh(ctx *gin.Context) {
 	claim, ok := ctx.Get(constants.CtxKey_JWTClaim)
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{Message: "server error"})
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
 		c.logger.Error("fail to get jwt claim")
 		return
 	}
+
 	var jwtClaim = claim.(*models.JWTClaim)
 	accessToken, accessExpired, err := c.service.Refresh(models.User{
 		Email: jwtClaim.UserEmail,
-		Model: gorm.Model{
-			ID: jwtClaim.UserID,
-		},
+		ID:    jwtClaim.UserID,
 	})
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
 			Message: "server error",
@@ -126,10 +128,12 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, models.HTTPResponse{Message: "success", Data: map[string]interface{}{
-		"access_token":   accessToken,
-		"access_expired": accessExpired,
-	}})
+	ctx.JSON(http.StatusCreated, models.HTTPResponse{
+		Message: "success",
+		Data: map[string]interface{}{
+			"access_token":   accessToken,
+			"access_expired": accessExpired,
+		}})
 	return
 }
 
@@ -167,7 +171,6 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		c.logger.Errorf("fail to register new user, payload [%v], error [%v]", payload, err)
 		return
 	}
-
 	ctx.JSON(http.StatusCreated, models.HTTPResponse{Message: "success"})
 	return
 }

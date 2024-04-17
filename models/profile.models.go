@@ -1,42 +1,42 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 // ---------- DAO ----------------
 
-// profile model
+// Profile model
 type Profile struct {
 	gorm.Model
-	Gender    string
-	Height    int
-	Horoscope string
-	Hobby     string
-	Language  string
-	Education string
+	ID        string    `gorm:"primaryKey"`
+	Name      string    `gorm:"column:name"`
+	Gender    string    `gorm:"column:gender"`
+	Birthday  time.Time `gorm:"column:birthday"`
+	Height    int       `gorm:"column:height"`
+	Horoscope string    `gorm:"column:horoscope"`
+	Hobby     string    `gorm:"column:hobby"`
+	Language  string    `gorm:"column:language"`
+	Education string    `gorm:"column:education"`
 }
 
 // TableName gives table name of model
 func (p *Profile) TableName() string {
-	return "profile"
-}
-
-func (p *Profile) Clone(clone *Profile) {
-	p.ID = clone.ID
-	p.Gender = clone.Gender
-	p.Height = clone.Height
-	p.Hobby = clone.Hobby
-	p.Education = clone.Education
-	p.Language = clone.Language
+	return "profiles"
 }
 
 // ---------- DTO ----------------
+
 func (p *Profile) Serialize() *SerializableProfile {
 	if p == nil {
 		return nil
 	}
 	return &SerializableProfile{
 		ID:        p.ID,
+		Name:      p.Name,
 		Gender:    p.Gender,
+		Birthday:  p.Birthday,
 		Height:    p.Height,
 		Horoscope: p.Horoscope,
 		Hobby:     p.Hobby,
@@ -46,11 +46,35 @@ func (p *Profile) Serialize() *SerializableProfile {
 }
 
 type SerializableProfile struct {
-	ID        uint   `json:"id"`
-	Gender    string `json:"gender"`
-	Height    int    `json:"height"`
-	Horoscope string `json:"horoscope"`
-	Hobby     string `json:"hobby"`
-	Language  string `json:"language"`
-	Education string `json:"education"`
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Gender    string    `json:"gender"`
+	Birthday  time.Time `json:"birthday"`
+	Height    int       `json:"height"`
+	Horoscope string    `json:"horoscope"`
+	Hobby     string    `json:"hobby"`
+	Language  string    `json:"language"`
+	Education string    `json:"education"`
+}
+
+type ProfileCreateRequest struct {
+	Name              string `json:"name"`
+	Gender            string `json:"gender"`
+	BirthdayInSeconds int64  `json:"birthday_in_seconds" validate:"required"`
+	Height            int    `json:"height"`
+	Horoscope         string `json:"horoscope"`
+	Hobby             string `json:"hobby"`
+	Language          string `json:"language"`
+	Education         string `json:"education"`
+}
+
+type ProfileUpdateRequest struct {
+	Name              string `json:"name"`
+	Gender            string `json:"gender"`
+	BirthdayInSeconds int64  `json:"birthday_in_seconds" validate:"required"`
+	Height            int    `json:"height"`
+	Horoscope         string `json:"horoscope"`
+	Hobby             string `json:"hobby"`
+	Language          string `json:"language"`
+	Education         string `json:"education"`
 }

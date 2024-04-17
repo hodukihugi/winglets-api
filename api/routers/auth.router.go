@@ -21,7 +21,7 @@ func (s *AuthRouter) Setup() {
 	{
 		auth.POST("/login", s.authController.SignIn)
 		auth.POST("/register", s.authController.Register)
-		auth.POST("/refresh", s.authMiddleware.Handler(), s.authController.Refresh)
+		auth.POST("/refresh", s.authMiddleware.AuthorizationWithCookie(), s.authController.Refresh)
 	}
 }
 
