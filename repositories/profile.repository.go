@@ -68,11 +68,7 @@ func (r *ProfileRepository) GetProfileById(id string) (*models.Profile, error) {
 	var profile models.Profile
 	db := r.Database.Model(&profile)
 	err := db.First(&profile, "id = ?", id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			r.logger.Info("profile not found")
-			return nil, errors.New("profile not found")
-		}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		r.logger.Debug(err)
 		return nil, err
 	}
@@ -89,15 +85,18 @@ func (r *ProfileRepository) GetListProfile() ([]models.Profile, error) {
 func (r *ProfileRepository) UpdateProfileById(id string, profile models.Profile) (*models.Profile, error) {
 	db := r.Database.Model(&profile)
 
-	checkProfilesExist := db.Select("*").Where("id = ?", id).Find(&profile)
-	if checkProfilesExist.RowsAffected <= 0 {
-		return nil, errors.New("profile not found")
-	}
-
-	if err := db.Where("id = ?", id).Updates(&profile).Error; err != nil {
+	var existingProfile models.Profile
+	err := db.First(&existingProfile, "id = ?", id).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		r.logger.Debug(err)
 		return nil, err
 	}
+
+	if err = db.Model(&existingProfile).Updates(&profile).Error; err != nil {
+		r.logger.Debug(err)
+		return nil, err
+	}
+
 	return &profile, nil
 }
 
