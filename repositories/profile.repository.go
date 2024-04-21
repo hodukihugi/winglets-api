@@ -30,17 +30,13 @@ func NewProfileRepository(db *core.Database, logger *core.Logger) IProfileReposi
 func (r *ProfileRepository) CreateProfile(profile models.Profile) (*models.Profile, error) {
 	db := r.Database.Model(&profile)
 
-	// Check if a soft-deleted record with the same ID exists
+	// Check if a record with the same ID exists
 	var existingProfile models.Profile
-	err := db.Unscoped().First(&existingProfile, "id = ?", profile.ID).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		r.logger.Debug(err)
-		return nil, err
-	}
 
-	// If a soft-deleted record exists, restore it
-	if existingProfile.ID != "" {
-		err = db.Unscoped().Model(&existingProfile).Update("deleted_at", nil).Error
+	// Check if a record with the same ID exists, including soft-deleted records
+	if err := db.Unscoped().First(&existingProfile, "id = ?", profile.ID).Error; err == nil {
+		// If a soft-deleted record exists, restore it
+		err = db.Model(&existingProfile).Update("deleted_at", nil).Error
 		if err != nil {
 			r.logger.Debug(err)
 			return nil, err
@@ -54,13 +50,18 @@ func (r *ProfileRepository) CreateProfile(profile models.Profile) (*models.Profi
 		}
 
 		return &existingProfile, nil
-	}
-
-	// Create a new record if no soft-deleted record exists
-	if err = db.Create(&profile).Error; err != nil {
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		r.logger.Debug(err)
 		return nil, err
 	}
 
+	// Create a new record if no record exists
+	//db = r.Database.Model(&profile)
+	r.logger.Info("Creating new profile")
+	if err := db.Model(&profile).Create(&profile).Error; err != nil {
+		r.logger.Debug(err)
+		return nil, err
+	}
 	return &profile, nil
 }
 
@@ -68,8 +69,8 @@ func (r *ProfileRepository) GetProfileById(id string) (*models.Profile, error) {
 	var profile models.Profile
 	db := r.Database.Model(&profile)
 	err := db.First(&profile, "id = ?", id).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		r.logger.Debug(err)
+	if err != nil {
+		r.logger.Debug("Profile not found")
 		return nil, err
 	}
 	return &profile, nil
@@ -87,7 +88,7 @@ func (r *ProfileRepository) UpdateProfileById(id string, profile models.Profile)
 
 	var existingProfile models.Profile
 	err := db.First(&existingProfile, "id = ?", id).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		r.logger.Debug(err)
 		return nil, err
 	}
@@ -103,10 +104,12 @@ func (r *ProfileRepository) UpdateProfileById(id string, profile models.Profile)
 func (r *ProfileRepository) DeleteProfileById(id string) error {
 	var profile models.Profile
 	db := r.Database.Model(&profile)
-	checkProfilesExist := db.Select("*").Where("id = ?", id).Find(&profile)
-	if checkProfilesExist.RowsAffected <= 0 {
-		r.logger.Debug("profile not found")
-		return errors.New("profile not found")
+
+	var existingProfile models.Profile
+	err := db.First(&existingProfile, "id = ?", id).Error
+	if err != nil {
+		r.logger.Debug("Not found profile")
+		return err
 	}
 
 	if err := db.Delete(&profile).Error; err != nil {

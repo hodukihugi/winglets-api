@@ -40,8 +40,8 @@ func (c *ProfileController) CreateProfile(ctx *gin.Context) {
 		return
 	}
 
-	_, err = c.service.GetProfileById(userID)
-	if err == nil {
+	result, _ := c.service.GetProfileById(userID)
+	if result != nil {
 		ctx.JSON(http.StatusConflict, models.HTTPResponse{
 			Message: "profile exists",
 		})
@@ -49,7 +49,7 @@ func (c *ProfileController) CreateProfile(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.service.CreateProfile(userID, request); err != nil {
+	if err = c.service.CreateProfile(userID, request); err != nil {
 		ctx.JSON(http.StatusForbidden, models.HTTPResponse{
 			Message: err.Error(),
 		})
