@@ -20,3 +20,8 @@ type SignInRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
+
+type VerifyEmailRequest struct {
+	Email            string `json:"email" validate:"required,email"`
+	VerificationCode string `json:"verification_code" validate:"required"`
+}

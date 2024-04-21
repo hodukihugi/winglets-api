@@ -2,6 +2,7 @@ package models
 
 import (
 	"gorm.io/gorm"
+	"time"
 )
 
 // ---------------- DAO ----------------
@@ -9,9 +10,12 @@ import (
 // User model
 type User struct {
 	gorm.Model
-	ID       string `gorm:"primaryKey"`
-	Email    string `gorm:"column:email"`
-	Password string `gorm:"column:password"`
+	ID                 string    `gorm:"primaryKey"`
+	Email              string    `gorm:"column:email"`
+	Password           string    `gorm:"column:password"`
+	VerificationCode   string    `gorm:"column:verification_code"`
+	VerificationStatus int       `gorm:"column:verification_status"`
+	VerificationTime   time.Time `gorm:"column:verification_time"`
 }
 
 // TableName gives table name of model
@@ -51,4 +55,9 @@ type OneUserFilter struct {
 	Email  string               `form:"email"`
 	Joins  *ArrStringFilterType `form:"joins"`
 	Fields *ArrStringFilterType `form:"fields"`
+}
+
+type UserUpdateRequest struct {
+	VerificationCode   string `json:"verification_code"`
+	VerificationStatus int    `json:"verification_status"`
 }

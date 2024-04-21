@@ -1,6 +1,8 @@
 package services
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hodukihugi/winglets-api/core"
@@ -13,7 +15,7 @@ import (
 type IAuthService interface {
 	Authorize(string) (*models.JWTClaim, error)
 	GenerateJWTTokens(user models.User) (string, string, int64, int64, error)
-	Register(request models.RegisterRequest) error
+	Register(request models.RegisterRequest) (*models.User, error)
 	Refresh(user models.User) (string, int64, error)
 }
 
@@ -75,16 +77,30 @@ func (s *AuthService) GenerateJWTTokens(user models.User) (string, string, int64
 	return accessToken, refreshToken, accessExpired, refreshExpired, nil
 }
 
-func (s *AuthService) Register(request models.RegisterRequest) error {
+func (s *AuthService) Register(request models.RegisterRequest) (*models.User, error) {
 	hashedPassword, err := utils.HashPassword(request.Password)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return s.userRepo.Create(models.User{
-		Email:    request.Email,
-		Password: hashedPassword,
-	})
+	//generate verification token
+	randomBytes := make([]byte, 26)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	verificationCode := base32.StdEncoding.EncodeToString(randomBytes)[:26]
+
+	registerUser := models.User{
+		Email:              request.Email,
+		Password:           hashedPassword,
+		VerificationCode:   verificationCode,
+		VerificationStatus: 0,
+		VerificationTime:   time.Now().UTC(),
+	}
+
+	return &registerUser, s.userRepo.Create(registerUser)
 }
 
 // ----------------- private -----------------

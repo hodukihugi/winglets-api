@@ -12,6 +12,8 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 )
 
 // AuthController struct
@@ -74,6 +76,13 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 			Message: "server error",
 		})
 		c.logger.Errorf("fail to sign in, payload [%v], error [%v]", payload, err)
+		return
+	}
+
+	if user.VerificationStatus == 0 {
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "email is not verified",
+		})
 		return
 	}
 
@@ -157,7 +166,8 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.service.Register(payload); err != nil {
+	result, err := c.service.Register(payload)
+	if err != nil {
 		emailDuplicated :=
 			strings.Contains(err.Error(), "users.email_unique") &&
 				strings.Contains(err.Error(), "Duplicate")
@@ -171,6 +181,112 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		c.logger.Errorf("fail to register new user, payload [%v], error [%v]", payload, err)
 		return
 	}
-	ctx.JSON(http.StatusCreated, models.HTTPResponse{Message: "success"})
+
+	//send verification token to user's email
+	var wg sync.WaitGroup
+	ch := make(chan error, 1)
+	origin := "http://localhost:8080/api"
+	email := []string{result.Email}
+	wg.Add(1)
+	go utils.SendVerificationEmailAsync(&wg, ch, c.env, origin, result.VerificationCode, email)
+	wg.Wait()
+	if err = <-ch; err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		c.logger.Debug(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.HTTPResponse{
+		Message: "signup successfully, check your mail to verify your account",
+	})
 	return
+}
+
+func (c *AuthController) VerifyEmail(ctx *gin.Context) {
+	verifyToken, ok := ctx.GetQuery("token")
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "invalid request",
+		})
+		return
+	}
+
+	email, ok := ctx.GetQuery("email")
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "invalid request",
+		})
+		return
+	}
+
+	email = strings.Trim(email, "[]")
+	c.logger.Debugf("Email after trim: %s", email)
+
+	verificationRequest := models.VerifyEmailRequest{
+		Email:            email,
+		VerificationCode: verifyToken,
+	}
+
+	if errs := c.validator.Validate.Struct(&verificationRequest); errs != nil {
+		var invalidFields []string
+		for _, err := range errs.(validator.ValidationErrors) {
+			invalidFields = append(invalidFields, utils.PascalToSnake(err.Field()))
+		}
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message:       "invalid request",
+			InvalidFields: invalidFields,
+		})
+		return
+	}
+
+	filterUser := models.OneUserFilter{
+		Email: email,
+	}
+
+	result, err := c.userService.First(filterUser)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	if result.VerificationStatus == 1 {
+		ctx.JSON(http.StatusConflict, models.HTTPResponse{
+			Message: "email has already been verified",
+		})
+		return
+	}
+
+	expireTime := result.VerificationTime.Add(c.env.EmailVerificationExpiresIn)
+
+	isValid := (result.VerificationCode == verifyToken) &&
+		(time.Now().UTC().Before(expireTime))
+
+	if !isValid {
+		ctx.JSON(http.StatusRequestTimeout, models.HTTPResponse{
+			Message: "email verification timeout",
+		})
+		return
+	}
+
+	userUpdateRequest := models.UserUpdateRequest{
+		VerificationStatus: 1,
+	}
+
+	if err = c.userService.UpdateById(result.ID, userUpdateRequest); err != nil {
+		c.logger.Debug(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.HTTPResponse{
+		Message: "verify email success",
+	})
+
 }
