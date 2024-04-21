@@ -30,8 +30,35 @@ func NewProfileRepository(db *core.Database, logger *core.Logger) IProfileReposi
 func (r *ProfileRepository) CreateProfile(profile models.Profile) (*models.Profile, error) {
 	db := r.Database.Model(&profile)
 
-	if error := db.Create(&profile).Error; error != nil {
-		return nil, error
+	// Check if a soft-deleted record with the same ID exists
+	var existingProfile models.Profile
+	err := db.Unscoped().First(&existingProfile, "id = ?", profile.ID).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		r.logger.Debug(err)
+		return nil, err
+	}
+
+	// If a soft-deleted record exists, restore it
+	if existingProfile.ID != "" {
+		err = db.Unscoped().Model(&existingProfile).Update("deleted_at", nil).Error
+		if err != nil {
+			r.logger.Debug(err)
+			return nil, err
+		}
+
+		// Update the restored record with the new data from the `profile` parameter
+		err = db.Model(&existingProfile).Updates(&profile).Error
+		if err != nil {
+			r.logger.Debug(err)
+			return nil, err
+		}
+
+		return &existingProfile, nil
+	}
+
+	// Create a new record if no soft-deleted record exists
+	if err = db.Create(&profile).Error; err != nil {
+		return nil, err
 	}
 
 	return &profile, nil
@@ -46,6 +73,7 @@ func (r *ProfileRepository) GetProfileById(id string) (*models.Profile, error) {
 			r.logger.Info("profile not found")
 			return nil, errors.New("profile not found")
 		}
+		r.logger.Debug(err)
 		return nil, err
 	}
 	return &profile, nil
@@ -67,6 +95,7 @@ func (r *ProfileRepository) UpdateProfileById(id string, profile models.Profile)
 	}
 
 	if err := db.Where("id = ?", id).Updates(&profile).Error; err != nil {
+		r.logger.Debug(err)
 		return nil, err
 	}
 	return &profile, nil
@@ -77,12 +106,12 @@ func (r *ProfileRepository) DeleteProfileById(id string) error {
 	db := r.Database.Model(&profile)
 	checkProfilesExist := db.Select("*").Where("id = ?", id).Find(&profile)
 	if checkProfilesExist.RowsAffected <= 0 {
-		r.logger.Info("profile not found")
+		r.logger.Debug("profile not found")
 		return errors.New("profile not found")
 	}
 
 	if err := db.Delete(&profile).Error; err != nil {
-		r.logger.Info("can't delete profile")
+		r.logger.Debug("can't delete profile")
 		r.logger.Error(err)
 		return err
 	}

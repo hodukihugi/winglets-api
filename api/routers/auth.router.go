@@ -17,7 +17,7 @@ type AuthRouter struct {
 // Setup user routes
 func (s *AuthRouter) Setup() {
 	s.logger.Info("Setting up routes")
-	auth := s.handler.Gin.Group("/auth")
+	auth := s.handler.Gin.Group("/api/auth")
 	{
 		auth.POST("/login", s.authController.SignIn)
 		auth.POST("/register", s.authController.Register)

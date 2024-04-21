@@ -88,7 +88,16 @@ func (c *ProfileController) GetMyProfile(ctx *gin.Context) {
 		return
 	}
 
-	result, _ := c.service.GetProfileById(userID)
+	result, err := c.service.GetProfileById(userID)
+
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, models.HTTPResponse{
+			Message: "profile not found",
+		})
+		ctx.Abort()
+		return
+	}
+
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
 		Message: "Get user profile successfully",
 		Data:    result.Serialize(),
