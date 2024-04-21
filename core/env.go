@@ -21,6 +21,9 @@ type Env struct {
 	SmtpUser                   string        `mapstructure:"SMTP_USER"`
 	SmtpPassword               string        `mapstructure:"SMTP_PASS"`
 	SmtpHost                   string        `mapstructure:"SMTP_HOST"`
+	IkPublicKey                string        `mapstructure:"IK_PUBLIC_KEY"`
+	IkPrivateKey               string        `mapstructure:"IK_PRIVATE_KEY"`
+	IkUrlEndpoint              string        `mapstructure:"IK_URL_ENDPOINT"`
 	JWTSecret                  string        `mapstructure:"JWT_SECRET"`
 	AccessTokenExpiresIn       time.Duration `mapstructure:"ACCESS_TOKEN_EXPIRED_IN"`
 	RefreshTokenExpiresIn      time.Duration `mapstructure:"REFRESH_TOKEN_EXPIRED_IN"`

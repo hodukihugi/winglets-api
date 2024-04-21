@@ -19,6 +19,7 @@ func (r *ProfileRouter) Setup() {
 		api.GET("/profile/:id", r.profileController.GetProfileById)
 		api.GET("/profile", r.profileController.GetMyProfile)
 		api.POST("/profile", r.profileController.CreateProfile)
+		api.POST("/profile/upload", r.profileController.UploadImage)
 		api.PUT("/profile", r.profileController.UpdateProfile)
 		api.DELETE("/profile", r.profileController.DeleteProfile)
 	}

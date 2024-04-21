@@ -56,9 +56,9 @@ func (r *ProfileRepository) CreateProfile(profile models.Profile) (*models.Profi
 	}
 
 	// Create a new record if no record exists
-	//db = r.Database.Model(&profile)
+	db = r.Database.Model(&profile)
 	r.logger.Info("Creating new profile")
-	if err := db.Model(&profile).Create(&profile).Error; err != nil {
+	if err := db.Create(&profile).Error; err != nil {
 		r.logger.Debug(err)
 		return nil, err
 	}

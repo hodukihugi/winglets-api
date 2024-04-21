@@ -19,6 +19,11 @@ type Profile struct {
 	Hobby     string    `gorm:"column:hobby"`
 	Language  string    `gorm:"column:language"`
 	Education string    `gorm:"column:education"`
+	Image1    string    `gorm:"column:image_1"`
+	Image2    string    `gorm:"column:image_2"`
+	Image3    string    `gorm:"column:image_3"`
+	Image4    string    `gorm:"column:image_4"`
+	Image5    string    `gorm:"column:image_5"`
 }
 
 // TableName gives table name of model
@@ -42,6 +47,11 @@ func (p *Profile) Serialize() *SerializableProfile {
 		Hobby:     p.Hobby,
 		Language:  p.Language,
 		Education: p.Education,
+		Image1:    p.Image1,
+		Image2:    p.Image2,
+		Image3:    p.Image3,
+		Image4:    p.Image4,
+		Image5:    p.Image5,
 	}
 }
 
@@ -55,6 +65,11 @@ type SerializableProfile struct {
 	Hobby     string    `json:"hobby"`
 	Language  string    `json:"language"`
 	Education string    `json:"education"`
+	Image1    string    `json:"image_1"`
+	Image2    string    `json:"image_2"`
+	Image3    string    `json:"image_3"`
+	Image4    string    `json:"image_4"`
+	Image5    string    `json:"image_5"`
 }
 
 type ProfileCreateRequest struct {
@@ -71,10 +86,15 @@ type ProfileCreateRequest struct {
 type ProfileUpdateRequest struct {
 	Name              string `json:"name"`
 	Gender            string `json:"gender"`
-	BirthdayInSeconds int64  `json:"birthday_in_seconds" validate:"required"`
+	BirthdayInSeconds int64  `json:"birthday_in_seconds"`
 	Height            int    `json:"height"`
 	Horoscope         string `json:"horoscope"`
 	Hobby             string `json:"hobby"`
 	Language          string `json:"language"`
 	Education         string `json:"education"`
+	Image1            string `json:"column:image_1"`
+	Image2            string `json:"column:image_2"`
+	Image3            string `json:"column:image_3"`
+	Image4            string `json:"column:image_4"`
+	Image5            string `json:"column:image_5"`
 }
