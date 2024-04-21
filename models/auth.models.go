@@ -25,3 +25,7 @@ type VerifyEmailRequest struct {
 	Email            string `json:"email" validate:"required,email"`
 	VerificationCode string `json:"verification_code" validate:"required"`
 }
+
+type SendVerificationEmailRequest struct {
+	Email string `json:"email" validate:"required,email"`
+}

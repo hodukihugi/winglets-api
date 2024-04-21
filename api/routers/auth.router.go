@@ -22,6 +22,7 @@ func (s *AuthRouter) Setup() {
 		auth.POST("/login", s.authController.SignIn)
 		auth.POST("/register", s.authController.Register)
 		auth.POST("/verify-email", s.authController.VerifyEmail)
+		auth.POST("/send-verification-email", s.authController.SendVerificationEmail)
 		auth.POST("/refresh", s.authMiddleware.AuthorizationWithCookie(), s.authController.Refresh)
 	}
 }

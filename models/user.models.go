@@ -58,6 +58,7 @@ type OneUserFilter struct {
 }
 
 type UserUpdateRequest struct {
-	VerificationCode   string `json:"verification_code"`
-	VerificationStatus int    `json:"verification_status"`
+	VerificationCode   string    `json:"verification_code"`
+	VerificationStatus int       `json:"verification_status"`
+	VerificationTime   time.Time `json:"verification_time"`
 }

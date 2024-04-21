@@ -34,5 +34,6 @@ func (u *UserService) UpdateById(id string, request models.UserUpdateRequest) er
 	return u.repository.UpdateById(id, models.User{
 		VerificationCode:   request.VerificationCode,
 		VerificationStatus: request.VerificationStatus,
+		VerificationTime:   request.VerificationTime,
 	})
 }

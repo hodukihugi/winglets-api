@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -204,6 +206,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	return
 }
 
+// VerifyEmail verify user email
 func (c *AuthController) VerifyEmail(ctx *gin.Context) {
 	verifyToken, ok := ctx.GetQuery("token")
 	if !ok {
@@ -288,5 +291,92 @@ func (c *AuthController) VerifyEmail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
 		Message: "verify email success",
 	})
+}
 
+// SendVerificationEmail send user verification email
+func (c *AuthController) SendVerificationEmail(ctx *gin.Context) {
+	var request models.SendVerificationEmailRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "fail to parse request body",
+		})
+		return
+	}
+
+	if errs := c.validator.Validate.Struct(&request); errs != nil {
+		var invalidFields []string
+		for _, err := range errs.(validator.ValidationErrors) {
+			invalidFields = append(invalidFields, utils.PascalToSnake(err.Field()))
+		}
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message:       "invalid request",
+			InvalidFields: invalidFields,
+		})
+		return
+	}
+
+	result, err := c.userService.First(models.OneUserFilter{
+		Email: request.Email,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, models.HTTPResponse{
+			Message: "user not exist",
+		})
+		return
+	}
+
+	if result.VerificationStatus == 1 {
+		ctx.JSON(http.StatusConflict, models.HTTPResponse{
+			Message: "user has already been verified",
+		})
+		return
+	}
+
+	//generate verification token
+	randomBytes := make([]byte, 26)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		c.logger.Debug(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	verificationCode := base32.StdEncoding.EncodeToString(randomBytes)[:26]
+
+	err = c.userService.UpdateById(result.ID, models.UserUpdateRequest{
+		VerificationCode: verificationCode,
+		VerificationTime: time.Now().UTC(),
+	})
+
+	if err != nil {
+		c.logger.Debug(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	//send verification token to user's email
+	var wg sync.WaitGroup
+	ch := make(chan error, 1)
+	origin := "http://localhost:8080/api"
+	email := []string{request.Email}
+	wg.Add(1)
+	go utils.SendVerificationEmailAsync(&wg, ch, c.env, origin, verificationCode, email)
+	wg.Wait()
+	if err = <-ch; err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		c.logger.Debug(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.HTTPResponse{
+		Message: "signup successfully, check your mail to verify your account",
+	})
+	return
 }
