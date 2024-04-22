@@ -10,6 +10,8 @@ import (
 	"github.com/hodukihugi/winglets-api/utils"
 	"net/http"
 	"reflect"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -145,6 +147,9 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 		return
 	}
 
+	var wg sync.WaitGroup
+	ch := make(chan models.ImageUploadResult, 5)
+
 	// Parse the multipart form
 	err = ctx.Request.ParseMultipartForm(10 << 20) // Max file size of 10MB
 	if err != nil {
@@ -154,77 +159,57 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 	}
 
 	// Get the files from the form
-	images := ctx.Request.MultipartForm.File["images"]
+	form, _ := ctx.MultipartForm()
+	files := form.File
 
-	// Get profile
-	result, err := c.service.GetProfileById(userID)
-	if err != nil {
-		c.logger.Debug(err)
-		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
-			Message: "server error",
-		})
-		return
-	}
+	var invalidFields []string
 
-	// Get profile's available image slot
-	availableSlotIds := c.getListAvailableSlotId(*result)
-	c.logger.Debug(availableSlotIds)
-	slotIndex := 0
+	for key, images := range files {
+		if !strings.HasPrefix(key, "image_") {
+			continue
+		}
 
-	if availableSlotIds == nil {
-		ctx.JSON(http.StatusConflict, models.HTTPResponse{
-			Message: "user has full image",
-		})
-		return
-	}
+		if len(images) <= 0 {
+			invalidFields = append(invalidFields, fmt.Sprintf("Empty image: %s", key))
+			break
+		}
 
-	var wg sync.WaitGroup
-	ch := make(chan string, len(availableSlotIds))
-
-	for _, fileHeader := range images {
-		// No more available slot
-		if slotIndex >= len(availableSlotIds) {
+		slotId, err := strconv.Atoi(strings.Trim(key, "image_"))
+		if err != nil {
+			invalidFields = append(invalidFields, fmt.Sprintf("Can't convert image slot id: %s", key))
+			c.logger.Debug(err)
 			break
 		}
 
 		// Open the uploaded file
+		fileHeader := images[0]
 		src, err := fileHeader.Open()
 		defer src.Close()
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
-				Message: "Failed to open file",
-			})
+			invalidFields = append(invalidFields, fmt.Sprintf("Can't open image: %s", key))
+			c.logger.Debug(err)
 			continue
 		}
 
 		// Upload the file to ImageKit
 		wg.Add(1)
-		imageName := fmt.Sprintf("user_profile_image_%d", availableSlotIds[slotIndex])
-		go utils.UploadImageAsync(&wg, context, ch, c.ik.ImageKit, src, imageName, userID)
-		slotIndex++
-		c.logger.Debugf("\nSlot index: %d", slotIndex)
+		imageName := fmt.Sprintf("user_profile_image_%d", slotId)
+		go utils.UploadProfileImageAsync(&wg, context, ch, c.ik.ImageKit, src, slotId, imageName, userID)
 	}
+
 	wg.Wait()
 	c.logger.Debug("Done upload image!")
 	close(ch)
 
 	var request models.ProfileUpdateRequest
-	slotIndex = 0
-	for url := range ch {
-		// No more available slot
-		if slotIndex >= len(availableSlotIds) {
-			break
-		}
-
+	for imageUploadResult := range ch {
 		v := reflect.ValueOf(&request)
-		f := v.Elem().FieldByName(fmt.Sprintf("Image%d", availableSlotIds[slotIndex]))
+		f := v.Elem().FieldByName(fmt.Sprintf("Image%d", imageUploadResult.SlotId))
 		if f.IsValid() {
-			f.Set(reflect.ValueOf(url))
+			f.Set(reflect.ValueOf(imageUploadResult.FileId))
 		}
-		slotIndex++
 	}
-	c.logger.Debugf("Image request value %v: ", request)
 
 	if err = c.service.UpdateProfileById(userID, request); err != nil {
 		ctx.JSON(http.StatusConflict, models.HTTPResponse{
@@ -232,9 +217,17 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 		})
 		return
 	} else {
-		ctx.JSON(http.StatusOK, models.HTTPResponse{
-			Message: "Update profile by id successfully",
-		})
+
+		if len(invalidFields) > 0 {
+			ctx.JSON(http.StatusOK, models.HTTPResponse{
+				Message:       "Upload profile image fail",
+				InvalidFields: invalidFields,
+			})
+		} else {
+			ctx.JSON(http.StatusOK, models.HTTPResponse{
+				Message: "Upload profile image successfully",
+			})
+		}
 	}
 }
 

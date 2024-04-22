@@ -98,3 +98,8 @@ type ProfileUpdateRequest struct {
 	Image4            string `json:"column:image_4"`
 	Image5            string `json:"column:image_5"`
 }
+
+type ImageUploadResult struct {
+	SlotId int
+	FileId string
+}

@@ -3,18 +3,20 @@ package utils
 import (
 	"context"
 	"fmt"
+	"github.com/hodukihugi/winglets-api/models"
 	"github.com/imagekit-developer/imagekit-go"
 	"github.com/imagekit-developer/imagekit-go/api/uploader"
 	"mime/multipart"
 	"sync"
 )
 
-func UploadImageAsync(
+func UploadProfileImageAsync(
 	wg *sync.WaitGroup,
 	ctx context.Context,
-	ch chan string,
+	ch chan models.ImageUploadResult,
 	ik *imagekit.ImageKit,
 	src multipart.File,
+	imageSlotId int,
 	imageName string,
 	folderName string,
 ) {
@@ -38,5 +40,5 @@ func UploadImageAsync(
 	}
 
 	fmt.Printf("Done upload image: %s - Image Url: %s\n", imageName, uploadResponse.Data.Url)
-	ch <- uploadResponse.Data.Url
+	ch <- models.ImageUploadResult{SlotId: imageSlotId, FileId: uploadResponse.Data.FileId}
 }
