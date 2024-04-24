@@ -60,11 +60,16 @@ func (s *ProfileService) UpdateProfileById(id string, request models.ProfileUpda
 		Hobby:     request.Hobby,
 		Language:  request.Language,
 		Education: request.Education,
-		Image1:    request.Image1,
-		Image2:    request.Image2,
-		Image3:    request.Image3,
-		Image4:    request.Image4,
-		Image5:    request.Image5,
+		ImageId1:  request.ImageId1,
+		ImageId2:  request.ImageId2,
+		ImageId3:  request.ImageId3,
+		ImageId4:  request.ImageId4,
+		ImageId5:  request.ImageId5,
+		ImageUrl1: request.ImageUrl1,
+		ImageUrl2: request.ImageUrl2,
+		ImageUrl3: request.ImageUrl3,
+		ImageUrl4: request.ImageUrl4,
+		ImageUrl5: request.ImageUrl5,
 	})
 
 	return err

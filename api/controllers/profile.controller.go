@@ -205,9 +205,14 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 	var request models.ProfileUpdateRequest
 	for imageUploadResult := range ch {
 		v := reflect.ValueOf(&request)
-		f := v.Elem().FieldByName(fmt.Sprintf("Image%d", imageUploadResult.SlotId))
-		if f.IsValid() {
-			f.Set(reflect.ValueOf(imageUploadResult.FileId))
+		f_id := v.Elem().FieldByName(fmt.Sprintf("ImageId%d", imageUploadResult.SlotId))
+		f_url := v.Elem().FieldByName(fmt.Sprintf("ImageUrl%d", imageUploadResult.SlotId))
+		if f_id.IsValid() {
+			f_id.Set(reflect.ValueOf(imageUploadResult.FileId))
+		}
+
+		if f_url.IsValid() {
+			f_url.Set(reflect.ValueOf(imageUploadResult.FileUrl))
 		}
 	}
 
@@ -228,6 +233,85 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 				Message: "Upload profile image successfully",
 			})
 		}
+	}
+}
+
+func (c *ProfileController) RemoveImage(ctx *gin.Context) {
+	var deleteRequest models.ProfileImageDeleteRequest
+	if err := ctx.ShouldBindJSON(&deleteRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if len(deleteRequest.Slots) <= 0 {
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "image slot list empty",
+		})
+		return
+	}
+
+	context, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	profile, err := c.service.GetProfileById(userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: err.Error(),
+		})
+	}
+
+	var wg sync.WaitGroup
+	var invalidFields []string
+
+	for slotId := range deleteRequest.Slots {
+		v := reflect.ValueOf(&profile)
+		f := v.Elem().FieldByName(fmt.Sprintf("Image%d", slotId))
+		if f.IsValid() && f.String() != "" {
+			wg.Add(1)
+			go utils.RemoveProfileImageAsync(&wg, context, c.ik.ImageKit, userID)
+		} else {
+			invalidFields = append(invalidFields, fmt.Sprintf("Image slot is empty: %d", slotId))
+		}
+	}
+
+	wg.Wait()
+	c.logger.Debug("Done remove images!")
+
+	if len(invalidFields) > 0 {
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
+			Message:       "Remove profile image fail",
+			InvalidFields: invalidFields,
+		})
+	}
+
+	var request models.ProfileUpdateRequest
+	for slotId := range deleteRequest.Slots {
+		v := reflect.ValueOf(&request)
+		f := v.Elem().FieldByName(fmt.Sprintf("Image%d", slotId))
+		if f.IsValid() {
+			f.Set(reflect.ValueOf(nil))
+		}
+	}
+
+	if err = c.service.UpdateProfileById(userID, request); err != nil {
+		ctx.JSON(http.StatusConflict, models.HTTPResponse{
+			Message: err.Error(),
+		})
+		return
+	} else {
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
+			Message: "Upload profile image successfully",
+		})
 	}
 }
 

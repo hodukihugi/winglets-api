@@ -40,5 +40,9 @@ func UploadProfileImageAsync(
 	}
 
 	fmt.Printf("Done upload image: %s - Image Url: %s\n", imageName, uploadResponse.Data.Url)
-	ch <- models.ImageUploadResult{SlotId: imageSlotId, FileId: uploadResponse.Data.FileId}
+	ch <- models.ImageUploadResult{
+		SlotId:  imageSlotId,
+		FileId:  uploadResponse.Data.FileId,
+		FileUrl: uploadResponse.Data.Url,
+	}
 }

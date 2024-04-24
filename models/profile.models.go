@@ -19,11 +19,16 @@ type Profile struct {
 	Hobby     string    `gorm:"column:hobby"`
 	Language  string    `gorm:"column:language"`
 	Education string    `gorm:"column:education"`
-	Image1    string    `gorm:"column:image_1"`
-	Image2    string    `gorm:"column:image_2"`
-	Image3    string    `gorm:"column:image_3"`
-	Image4    string    `gorm:"column:image_4"`
-	Image5    string    `gorm:"column:image_5"`
+	ImageId1  string    `gorm:"column:image_id_1"`
+	ImageId2  string    `gorm:"column:image_id_2"`
+	ImageId3  string    `gorm:"column:image_id_3"`
+	ImageId4  string    `gorm:"column:image_id_4"`
+	ImageId5  string    `gorm:"column:image_id_5"`
+	ImageUrl1 string    `gorm:"column:image_url_1"`
+	ImageUrl2 string    `gorm:"column:image_url_2"`
+	ImageUrl3 string    `gorm:"column:image_url_3"`
+	ImageUrl4 string    `gorm:"column:image_url_4"`
+	ImageUrl5 string    `gorm:"column:image_url_5"`
 }
 
 // TableName gives table name of model
@@ -47,11 +52,11 @@ func (p *Profile) Serialize() *SerializableProfile {
 		Hobby:     p.Hobby,
 		Language:  p.Language,
 		Education: p.Education,
-		Image1:    p.Image1,
-		Image2:    p.Image2,
-		Image3:    p.Image3,
-		Image4:    p.Image4,
-		Image5:    p.Image5,
+		Image1:    p.ImageUrl1,
+		Image2:    p.ImageUrl2,
+		Image3:    p.ImageUrl3,
+		Image4:    p.ImageUrl4,
+		Image5:    p.ImageUrl5,
 	}
 }
 
@@ -92,14 +97,24 @@ type ProfileUpdateRequest struct {
 	Hobby             string `json:"hobby"`
 	Language          string `json:"language"`
 	Education         string `json:"education"`
-	Image1            string `json:"column:image_1"`
-	Image2            string `json:"column:image_2"`
-	Image3            string `json:"column:image_3"`
-	Image4            string `json:"column:image_4"`
-	Image5            string `json:"column:image_5"`
+	ImageId1          string `json:"image_id_1"`
+	ImageId2          string `json:"image_id_2"`
+	ImageId3          string `json:"image_id_3"`
+	ImageId4          string `json:"image_id_4"`
+	ImageId5          string `json:"image_id_5"`
+	ImageUrl1         string `json:"image_url_1"`
+	ImageUrl2         string `json:"image_url_2"`
+	ImageUrl3         string `json:"image_url_3"`
+	ImageUrl4         string `json:"image_url_4"`
+	ImageUrl5         string `json:"image_url_5"`
 }
 
 type ImageUploadResult struct {
-	SlotId int
-	FileId string
+	SlotId  int
+	FileId  string
+	FileUrl string
+}
+
+type ProfileImageDeleteRequest struct {
+	Slots []int `json:"slots"`
 }
