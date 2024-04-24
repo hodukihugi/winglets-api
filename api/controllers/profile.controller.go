@@ -189,7 +189,7 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 		if err != nil {
 			invalidFields = append(invalidFields, fmt.Sprintf("Can't open image: %s", key))
 			c.logger.Debug(err)
-			continue
+			break
 		}
 
 		// Upload the file to ImageKit
@@ -199,7 +199,6 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 	}
 
 	wg.Wait()
-	c.logger.Debug("Done upload image!")
 	close(ch)
 
 	var request models.ProfileUpdateRequest
@@ -270,47 +269,45 @@ func (c *ProfileController) RemoveImage(ctx *gin.Context) {
 		})
 	}
 
-	var wg sync.WaitGroup
 	var invalidFields []string
 
-	for slotId := range deleteRequest.Slots {
-		v := reflect.ValueOf(&profile)
-		f := v.Elem().FieldByName(fmt.Sprintf("Image%d", slotId))
-		if f.IsValid() && f.String() != "" {
-			wg.Add(1)
-			go utils.RemoveProfileImageAsync(&wg, context, c.ik.ImageKit, userID)
+	for _, slotId := range deleteRequest.Slots {
+		v := reflect.ValueOf(profile)
+		f := v.Elem().FieldByName(fmt.Sprintf("ImageId%d", slotId))
+		if !f.IsValid() || f.String() == "" {
+			invalidFields = append(invalidFields, fmt.Sprintf("Image slot %d is empty", slotId))
+			c.logger.Debugf("Invalid ImageId%d: %s", slotId, f.String())
 		} else {
-			invalidFields = append(invalidFields, fmt.Sprintf("Image slot is empty: %d", slotId))
+			c.logger.Debugf("Valid ImageId%d: %s", slotId, f.String())
 		}
 	}
-
-	wg.Wait()
-	c.logger.Debug("Done remove images!")
 
 	if len(invalidFields) > 0 {
 		ctx.JSON(http.StatusOK, models.HTTPResponse{
 			Message:       "Remove profile image fail",
 			InvalidFields: invalidFields,
 		})
+		return
 	}
 
-	var request models.ProfileUpdateRequest
-	for slotId := range deleteRequest.Slots {
-		v := reflect.ValueOf(&request)
-		f := v.Elem().FieldByName(fmt.Sprintf("Image%d", slotId))
-		if f.IsValid() {
-			f.Set(reflect.ValueOf(nil))
-		}
+	var wg sync.WaitGroup
+	for _, slotId := range deleteRequest.Slots {
+		wg.Add(1)
+		v := reflect.ValueOf(profile)
+		f := v.Elem().FieldByName(fmt.Sprintf("ImageId%d", slotId))
+		go utils.RemoveProfileImageAsync(&wg, context, c.ik.ImageKit, f.String())
+		c.logger.Debugf("Run remove profile image!")
 	}
+	wg.Wait()
 
-	if err = c.service.UpdateProfileById(userID, request); err != nil {
+	if err = c.service.UpdateProfileImageById(userID, deleteRequest.Slots); err != nil {
 		ctx.JSON(http.StatusConflict, models.HTTPResponse{
 			Message: err.Error(),
 		})
 		return
 	} else {
 		ctx.JSON(http.StatusOK, models.HTTPResponse{
-			Message: "Upload profile image successfully",
+			Message: "Remove profile images successfully",
 		})
 	}
 }

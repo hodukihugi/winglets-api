@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"errors"
+	"fmt"
 	"github.com/hodukihugi/winglets-api/core"
 	"github.com/hodukihugi/winglets-api/models"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ type IProfileRepository interface {
 	GetProfileById(string) (*models.Profile, error)
 	GetListProfile() ([]models.Profile, error)
 	UpdateProfileById(string, models.Profile) (*models.Profile, error)
+	UpdateProfileImageById(string, []int) (*models.Profile, error)
 	DeleteProfileById(string) error
 }
 
@@ -99,6 +101,30 @@ func (r *ProfileRepository) UpdateProfileById(id string, profile models.Profile)
 	}
 
 	return &profile, nil
+}
+
+func (r *ProfileRepository) UpdateProfileImageById(id string, slots []int) (*models.Profile, error) {
+	db := r.Database.Model(&models.Profile{})
+
+	var existingProfile models.Profile
+	err := db.First(&existingProfile, "id = ?", id).Error
+	if err != nil {
+		r.logger.Debug(err)
+		return nil, err
+	}
+
+	updateMap := make(map[string]interface{})
+
+	for _, slotId := range slots {
+		updateMap[fmt.Sprintf("ImageId%d", slotId)] = nil
+		updateMap[fmt.Sprintf("ImageUrl%d", slotId)] = nil
+	}
+	if err = db.Model(&existingProfile).Updates(updateMap).Error; err != nil {
+		r.logger.Debug(err)
+		return nil, err
+	}
+
+	return &existingProfile, nil
 }
 
 func (r *ProfileRepository) DeleteProfileById(id string) error {

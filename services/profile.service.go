@@ -11,6 +11,7 @@ type IProfileService interface {
 	CreateProfile(string, models.ProfileCreateRequest) error
 	GetProfileById(string) (*models.Profile, error)
 	UpdateProfileById(string, models.ProfileUpdateRequest) error
+	UpdateProfileImageById(string, []int) error
 	DeleteProfileById(string) error
 }
 
@@ -72,6 +73,11 @@ func (s *ProfileService) UpdateProfileById(id string, request models.ProfileUpda
 		ImageUrl5: request.ImageUrl5,
 	})
 
+	return err
+}
+
+func (s *ProfileService) UpdateProfileImageById(id string, slots []int) error {
+	_, err := s.repository.UpdateProfileImageById(id, slots)
 	return err
 }
 func (s *ProfileService) DeleteProfileById(id string) error {
