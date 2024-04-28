@@ -4,6 +4,7 @@ import (
 	"github.com/hodukihugi/winglets-api/core"
 	"github.com/hodukihugi/winglets-api/models"
 	"github.com/hodukihugi/winglets-api/repositories"
+	"strings"
 	"time"
 )
 
@@ -35,8 +36,8 @@ func (s *ProfileService) CreateProfile(userID string, request models.ProfileCrea
 		Birthday:  time.Unix(request.BirthdayInSeconds, 0).UTC(),
 		Height:    request.Height,
 		Horoscope: request.Horoscope,
-		Hobby:     request.Hobby,
-		Language:  request.Language,
+		Hobby:     strings.Join(request.Hobby, ","),
+		Language:  strings.Join(request.Language, ","),
 		Education: request.Education,
 	})
 
@@ -58,8 +59,8 @@ func (s *ProfileService) UpdateProfileById(id string, request models.ProfileUpda
 		Birthday:  time.Unix(request.BirthdayInSeconds, 0).UTC(),
 		Height:    request.Height,
 		Horoscope: request.Horoscope,
-		Hobby:     request.Hobby,
-		Language:  request.Language,
+		Hobby:     strings.Join(request.Hobby, ","),
+		Language:  strings.Join(request.Language, ","),
 		Education: request.Education,
 		ImageId1:  request.ImageId1,
 		ImageId2:  request.ImageId2,

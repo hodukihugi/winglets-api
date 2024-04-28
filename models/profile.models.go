@@ -2,6 +2,7 @@ package models
 
 import (
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -49,8 +50,8 @@ func (p *Profile) Serialize() *SerializableProfile {
 		Birthday:  p.Birthday,
 		Height:    p.Height,
 		Horoscope: p.Horoscope,
-		Hobby:     p.Hobby,
-		Language:  p.Language,
+		Hobby:     strings.Split(p.Hobby, ","),
+		Language:  strings.Split(p.Language, ","),
 		Education: p.Education,
 		Image1:    p.ImageUrl1,
 		Image2:    p.ImageUrl2,
@@ -67,8 +68,8 @@ type SerializableProfile struct {
 	Birthday  time.Time `json:"birthday"`
 	Height    int       `json:"height"`
 	Horoscope string    `json:"horoscope"`
-	Hobby     string    `json:"hobby"`
-	Language  string    `json:"language"`
+	Hobby     []string  `json:"hobby"`
+	Language  []string  `json:"language"`
 	Education string    `json:"education"`
 	Image1    string    `json:"image_1"`
 	Image2    string    `json:"image_2"`
@@ -78,35 +79,35 @@ type SerializableProfile struct {
 }
 
 type ProfileCreateRequest struct {
-	Name              string `json:"name"`
-	Gender            string `json:"gender"`
-	BirthdayInSeconds int64  `json:"birthday_in_seconds" validate:"required"`
-	Height            int    `json:"height"`
-	Horoscope         string `json:"horoscope"`
-	Hobby             string `json:"hobby"`
-	Language          string `json:"language"`
-	Education         string `json:"education"`
+	Name              string   `json:"name"`
+	Gender            string   `json:"gender"`
+	BirthdayInSeconds int64    `json:"birthday_in_seconds" validate:"required"`
+	Height            int      `json:"height"`
+	Horoscope         string   `json:"horoscope"`
+	Hobby             []string `json:"hobby"`
+	Language          []string `json:"language"`
+	Education         string   `json:"education"`
 }
 
 type ProfileUpdateRequest struct {
-	Name              string `json:"name"`
-	Gender            string `json:"gender"`
-	BirthdayInSeconds int64  `json:"birthday_in_seconds"`
-	Height            int    `json:"height"`
-	Horoscope         string `json:"horoscope"`
-	Hobby             string `json:"hobby"`
-	Language          string `json:"language"`
-	Education         string `json:"education"`
-	ImageId1          string `json:"image_id_1"`
-	ImageId2          string `json:"image_id_2"`
-	ImageId3          string `json:"image_id_3"`
-	ImageId4          string `json:"image_id_4"`
-	ImageId5          string `json:"image_id_5"`
-	ImageUrl1         string `json:"image_url_1"`
-	ImageUrl2         string `json:"image_url_2"`
-	ImageUrl3         string `json:"image_url_3"`
-	ImageUrl4         string `json:"image_url_4"`
-	ImageUrl5         string `json:"image_url_5"`
+	Name              string   `json:"name"`
+	Gender            string   `json:"gender"`
+	BirthdayInSeconds int64    `json:"birthday_in_seconds"`
+	Height            int      `json:"height"`
+	Horoscope         string   `json:"horoscope"`
+	Hobby             []string `json:"hobby"`
+	Language          []string `json:"language"`
+	Education         string   `json:"education"`
+	ImageId1          string   `json:"image_id_1"`
+	ImageId2          string   `json:"image_id_2"`
+	ImageId3          string   `json:"image_id_3"`
+	ImageId4          string   `json:"image_id_4"`
+	ImageId5          string   `json:"image_id_5"`
+	ImageUrl1         string   `json:"image_url_1"`
+	ImageUrl2         string   `json:"image_url_2"`
+	ImageUrl3         string   `json:"image_url_3"`
+	ImageUrl4         string   `json:"image_url_4"`
+	ImageUrl5         string   `json:"image_url_5"`
 }
 
 type ImageUploadResult struct {

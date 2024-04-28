@@ -130,7 +130,7 @@ func (c *ProfileController) UpdateProfile(ctx *gin.Context) {
 		return
 	} else {
 		ctx.JSON(http.StatusOK, models.HTTPResponse{
-			Message: "Update profile by id successfully",
+			Message: "Update profile successfully",
 		})
 	}
 }
@@ -332,48 +332,4 @@ func (c *ProfileController) DeleteProfile(ctx *gin.Context) {
 			Message: "Delete profile successfully",
 		})
 	}
-}
-
-// ====================== private ======================
-
-func (c *ProfileController) getAvailableSlotId(profile models.Profile) int {
-	if profile.ID == "" {
-		return -1
-	}
-
-	// Define an array of image field names
-	imageFields := []string{"Image1", "Image2", "Image3", "Image4", "Image5"}
-
-	// Iterate over image fields
-	for i, field := range imageFields {
-		// Check if the image field is empty
-		if reflect.ValueOf(profile).FieldByName(field).String() == "" {
-			return i + 1
-		}
-	}
-
-	return -1
-}
-
-func (c *ProfileController) getListAvailableSlotId(profile models.Profile) []int {
-	if profile.ID == "" {
-		return nil
-	}
-
-	// Define an array of image field names
-	var result []int
-	imageFields := []string{"Image1", "Image2", "Image3", "Image4", "Image5"}
-
-	// Iterate over image fields
-	for i, field := range imageFields {
-		// Check if the image field is empty
-		if reflect.ValueOf(profile).FieldByName(field).String() == "" {
-			result = append(result, i+1)
-		}
-	}
-
-	if len(result) == 0 {
-		return nil
-	}
-	return result
 }
