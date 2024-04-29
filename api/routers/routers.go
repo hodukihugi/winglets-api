@@ -9,6 +9,7 @@ var Module = fx.Options(
 	fx.Provide(NewUserRouter),
 	fx.Provide(NewAuthRouter),
 	fx.Provide(NewProfileRouter),
+	fx.Provide(NewRecommendRouter),
 	fx.Provide(NewRouters),
 )
 
@@ -25,11 +26,13 @@ func NewRouters(
 	userRouter *UserRouter,
 	authRouter *AuthRouter,
 	profileRouter *ProfileRouter,
+	recommendRouter *RecommendRouter,
 ) Routers {
 	return Routers{
 		userRouter,
 		authRouter,
 		profileRouter,
+		recommendRouter,
 	}
 }
 

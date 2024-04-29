@@ -10,7 +10,7 @@ import (
 // User model
 type User struct {
 	gorm.Model
-	ID                 string    `gorm:"primaryKey"`
+	ID                 string    `gorm:"primaryKey;column:id"`
 	Email              string    `gorm:"column:email"`
 	Password           string    `gorm:"column:password"`
 	VerificationCode   string    `gorm:"column:verification_code"`

@@ -11,7 +11,7 @@ import (
 // Profile model
 type Profile struct {
 	gorm.Model
-	ID        string    `gorm:"primaryKey"`
+	ID        string    `gorm:"primaryKey;column:id"`
 	Name      string    `gorm:"column:name"`
 	Gender    string    `gorm:"column:gender"`
 	Birthday  time.Time `gorm:"column:birthday"`
@@ -79,8 +79,8 @@ type SerializableProfile struct {
 }
 
 type ProfileCreateRequest struct {
-	Name              string   `json:"name"`
-	Gender            string   `json:"gender"`
+	Name              string   `json:"name" validate:"required"`
+	Gender            string   `json:"gender" validate:"oneof=male female,required"`
 	BirthdayInSeconds int64    `json:"birthday_in_seconds" validate:"required"`
 	Height            int      `json:"height"`
 	Horoscope         string   `json:"horoscope"`
@@ -91,7 +91,7 @@ type ProfileCreateRequest struct {
 
 type ProfileUpdateRequest struct {
 	Name              string   `json:"name"`
-	Gender            string   `json:"gender"`
+	Gender            string   `json:"gender" validate:"oneof=male female"`
 	BirthdayInSeconds int64    `json:"birthday_in_seconds"`
 	Height            int      `json:"height"`
 	Horoscope         string   `json:"horoscope"`
