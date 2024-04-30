@@ -49,6 +49,7 @@ func (c *RecommendController) Answer(ctx *gin.Context) {
 			QuestionID:   request.Answers[i].QuestionID,
 			UserAnswer:   request.Answers[i].UserAnswer,
 			PreferAnswer: request.Answers[i].PreferAnswer,
+			Importance:   request.Answers[i].Importance,
 		})
 
 		if err != nil {

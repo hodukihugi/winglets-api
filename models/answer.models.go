@@ -13,6 +13,7 @@ type Answer struct {
 	QuestionID   int    `gorm:"primaryKey;column:question_id"`
 	UserAnswer   int    `gorm:"column:user_answer"`
 	PreferAnswer int    `gorm:"column:prefer_answer"`
+	Importance   int    `gorm:"column:importance"`
 }
 
 // TableName gives table name of model
@@ -31,6 +32,7 @@ func (p *Answer) Serialize() *SerializableAnswer {
 		QuestionID:   p.QuestionID,
 		UserAnswer:   p.UserAnswer,
 		PreferAnswer: p.PreferAnswer,
+		Importance:   p.Importance,
 	}
 }
 
@@ -39,6 +41,7 @@ type SerializableAnswer struct {
 	QuestionID   int    `json:"question_id"`
 	UserAnswer   int    `json:"user_answer"`
 	PreferAnswer int    `json:"prefer_answer"`
+	Importance   int    `json:"importance"`
 }
 
 type AnswerRequest struct {
@@ -46,5 +49,6 @@ type AnswerRequest struct {
 		QuestionID   int `json:"question_id"`
 		UserAnswer   int `json:"user_answer"`
 		PreferAnswer int `json:"prefer_answer"`
+		Importance   int `json:"importance"`
 	} `json:"answers"`
 }

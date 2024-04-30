@@ -62,6 +62,7 @@ func (s *RecommendService) CreateUserAnswer(answer models.SerializableAnswer) er
 		QuestionID:   answer.QuestionID,
 		UserAnswer:   answer.UserAnswer,
 		PreferAnswer: answer.PreferAnswer,
+		Importance:   answer.Importance,
 	})
 	return err
 }
