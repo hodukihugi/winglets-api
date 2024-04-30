@@ -6,32 +6,38 @@ import (
 	"github.com/hodukihugi/winglets-api/core"
 	"github.com/hodukihugi/winglets-api/models"
 	"github.com/hodukihugi/winglets-api/repositories"
+	"github.com/hodukihugi/winglets-api/utils"
 	"gorm.io/gorm"
+	"sort"
+	"sync"
 )
 
 type IRecommendService interface {
 	CreateUserAnswer(models.SerializableAnswer) error
 	GetMatchesById(string) error
-	GetRecommendationById(string) error
+	GetRecommendationById(string, int, int, float64, float64) ([]models.MatchProfile, error)
 	SmashById(string) error
 	PassById(string) error
 }
 
 type RecommendService struct {
-	answerRepository repositories.IAnswerRepository
-	matchRepository  repositories.IMatchRepository
-	logger           *core.Logger
+	profileRepository repositories.IProfileRepository
+	answerRepository  repositories.IAnswerRepository
+	matchRepository   repositories.IMatchRepository
+	logger            *core.Logger
 }
 
 func NewRecommendService(
+	profileRepository repositories.IProfileRepository,
 	answerRepository repositories.IAnswerRepository,
 	matchRepository repositories.IMatchRepository,
 	logger *core.Logger,
 ) IRecommendService {
 	return &RecommendService{
-		answerRepository: answerRepository,
-		matchRepository:  matchRepository,
-		logger:           logger,
+		profileRepository: profileRepository,
+		answerRepository:  answerRepository,
+		matchRepository:   matchRepository,
+		logger:            logger,
 	}
 }
 
@@ -71,8 +77,95 @@ func (s *RecommendService) GetMatchesById(id string) error {
 	return errors.New("not implemented")
 }
 
-func (s *RecommendService) GetRecommendationById(id string) error {
-	return errors.New("not implemented")
+func (s *RecommendService) GetRecommendationById(
+	userId string,
+	minAge int,
+	maxAge int,
+	minDistance float64,
+	maxDistance float64,
+) ([]models.MatchProfile, error) {
+	var recommendedProfiles []models.MatchProfile
+
+	userProfile, err := s.profileRepository.GetProfileById(userId)
+	if err != nil {
+		s.logger.Error(err)
+		return nil, err
+	}
+
+	longitude, latitude, err := utils.CoordinatesStringToPairFloat64(userProfile.Coordinates)
+
+	if err != nil {
+		s.logger.Error(err)
+		return nil, err
+	}
+
+	satisfiedProfiles, err := s.profileRepository.GetListProfile(models.ProfileFilter{
+		ExcludedUserId: userId,
+		MinAge:         minAge,
+		MaxAge:         maxAge,
+		MinDistance:    minDistance,
+		MaxDistance:    maxDistance,
+		Longitude:      longitude,
+		Latitude:       latitude,
+	})
+
+	if err != nil {
+		s.logger.Error(err)
+		return nil, err
+	}
+
+	userAnswers, err := s.answerRepository.FindListAnswerByUserId(userId)
+	if err != nil {
+		s.logger.Error(err)
+		return nil, err
+	}
+
+	mapUserAnswers := make(map[int]*models.Answer)
+	for _, userAnswer := range userAnswers {
+		mapUserAnswers[userAnswer.QuestionID] = &userAnswer
+	}
+
+	var wg sync.WaitGroup
+	var matchCalculationResultChan = make(chan models.MatchCalculationResult, len(satisfiedProfiles))
+	for _, otherProfile := range satisfiedProfiles {
+		otherAnswers, err := s.answerRepository.FindListAnswerByUserId(otherProfile.ID)
+		mapOtherAnswers := make(map[int]*models.Answer)
+		for _, otherAnswer := range otherAnswers {
+			mapOtherAnswers[otherAnswer.QuestionID] = &otherAnswer
+		}
+		if err != nil {
+			s.logger.Error(err)
+			return nil, err
+		}
+		wg.Add(1)
+		go utils.CalculateMatchPercentage(&wg, matchCalculationResultChan, mapUserAnswers, mapOtherAnswers, otherProfile)
+	}
+	wg.Wait()
+	close(matchCalculationResultChan)
+
+	var matchResults []models.MatchCalculationResult
+
+	for result := range matchCalculationResultChan {
+		matchResults = append(matchResults, result)
+	}
+
+	sort.Slice(matchResults, func(i, j int) bool {
+		return matchResults[i].MatchPercentage > matchResults[j].MatchPercentage
+	})
+
+	for _, result := range matchResults {
+		matchProfile := result.MatchedProfile.ConvertToMatchProfile()
+		lon, lat, err := utils.CoordinatesStringToPairFloat64(result.MatchedProfile.Coordinates)
+		if err != nil {
+			s.logger.Error(err)
+			return nil, err
+		}
+		matchProfile.Distance = utils.CalculateDistance(longitude, latitude, lon, lat)
+		matchProfile.MatchPercentage = result.MatchPercentage
+		recommendedProfiles = append(recommendedProfiles, *matchProfile)
+	}
+	// TODO: Lưu những profile đã được gợi í
+	return recommendedProfiles, nil
 }
 
 func (s *RecommendService) SmashById(id string) error {

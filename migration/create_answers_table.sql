@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `answers` (
     `question_id` INT NOT NULL,
     `user_answer` INT DEFAULT 0,
     `prefer_answer` INT DEFAULT 0,
+    `importance` INT DEFAULT 0,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `deleted_at` DATETIME DEFAULT NULL,

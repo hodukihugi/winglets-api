@@ -1,6 +1,5 @@
 -- +migrate Down
 DROP TABLE IF EXISTS `profiles`;
-
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS `profiles` (
     `id` VARCHAR(36) NOT NULL,
@@ -9,9 +8,12 @@ CREATE TABLE IF NOT EXISTS `profiles` (
     `birthday` DATETIME,
     `height` INT,
     `horoscope` VARCHAR(50),
-    `hobby` VARCHAR(255),
-    `language` VARCHAR(50),
-    `education` VARCHAR(100),
+    `hobby` TEXT,
+    `language` TEXT,
+    `education` VARCHAR(255),
+    `location` VARCHAR(255),
+    `home_town` VARCHAR(255),
+    `coordinates` VARCHAR(255),
     `image_id_1` VARCHAR(50) DEFAULT NULL,
     `image_id_2` VARCHAR(50) DEFAULT NULL,
     `image_id_3` VARCHAR(50) DEFAULT NULL,
@@ -27,4 +29,4 @@ CREATE TABLE IF NOT EXISTS `profiles` (
     `deleted_at` DATETIME DEFAULT NULL,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_profile_user_id` FOREIGN KEY (`id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
