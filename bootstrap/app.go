@@ -6,8 +6,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "Innov8tor",
-	Short: "Innov8tor",
+	Use:   "Winglets",
+	Short: "Winglets",
 	Long: `
 This is a command runner or cli for api architecture in golang. 
 Using this we can use underlying dependency injection container for running scripts. 

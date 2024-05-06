@@ -11,18 +11,13 @@ import (
 type IUserRepository interface {
 	Create(models.User) error
 	First(models.OneUserFilter) (*models.User, error)
+	UpdateById(string, models.User) error
 }
 
 // UserRepository database structure
 type UserRepository struct {
 	*core.Database
 	logger *core.Logger
-}
-
-func (r *UserRepository) First(filter models.OneUserFilter) (user *models.User, err error) {
-	tx := r.Table("users")
-	r.filterUser(filter, tx)
-	return user, tx.First(&user).Error
 }
 
 // NewUserRepository creates a new user repository
@@ -37,6 +32,29 @@ func (r *UserRepository) Create(user models.User) error {
 	user.Email = strings.ToLower(user.Email)
 	user.ID = uuid.New().String()
 	return r.DB.Create(&user).Error
+}
+
+func (r *UserRepository) First(filter models.OneUserFilter) (user *models.User, err error) {
+	tx := r.Table("users")
+	r.filterUser(filter, tx)
+	return user, tx.First(&user).Error
+}
+
+func (r *UserRepository) UpdateById(id string, user models.User) error {
+	db := r.Database.Model(&user)
+	var existingUser models.User
+	err := db.First(&existingUser, "id = ?", id).Error
+	if err != nil {
+		r.logger.Debug(err)
+		return err
+	}
+
+	if err = db.Model(&existingUser).Updates(&user).Error; err != nil {
+		r.logger.Debug(err)
+		return err
+	}
+
+	return nil
 }
 
 // -------- Private functions ---------

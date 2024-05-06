@@ -9,4 +9,5 @@ var Module = fx.Options(
 	fx.Provide(GetLogger),
 	fx.Provide(NewDatabase),
 	fx.Provide(NewValidator),
+	fx.Provide(NewImageKit),
 )

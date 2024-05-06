@@ -53,3 +53,20 @@ func NullUintToUint(u null.Uint) uint {
 	}
 	return 0
 }
+
+// CoordinatesStringToPairFloat64 convert coordinates (longitude, latitude) string to pair float64.
+func CoordinatesStringToPairFloat64(coordinates string) (float64, float64, error) {
+	coords := strings.Split(coordinates, ",")
+
+	longitude, err := strconv.ParseFloat(coords[0], 64)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	latitude, err := strconv.ParseFloat(coords[1], 64)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return longitude, latitude, nil
+}

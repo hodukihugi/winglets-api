@@ -8,11 +8,25 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"io"
+	"mime/multipart"
 	"regexp"
 	"strings"
 
 	"github.com/nfnt/resize"
 )
+
+func ConvertImageToBase64(input multipart.File) (string, error) {
+	imageBytes, err := io.ReadAll(input)
+	if err != nil {
+		return "", err
+	}
+
+	// Encode the image bytes to base64
+	encodedString := base64.StdEncoding.EncodeToString(imageBytes)
+
+	return encodedString, nil
+}
 
 // ResizeBase64ImageTo50x50 input format: "data:image/png;base64,iVBORw0KGg....="
 func ResizeBase64ImageTo50x50(input string) (string, error) {
