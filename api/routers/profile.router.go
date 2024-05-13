@@ -14,7 +14,7 @@ type ProfileRouter struct {
 }
 
 func (r *ProfileRouter) Setup() {
-	api := r.handler.Gin.Group("/api").Use(r.authMiddleware.AuthorizationWithCookie())
+	api := r.handler.Gin.Group("/api").Use(r.authMiddleware.Handler())
 	{
 		api.GET("/profile/:id", r.profileController.GetProfileById)
 		api.GET("/profile", r.profileController.GetMyProfile)

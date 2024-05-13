@@ -14,7 +14,7 @@ type RecommendRouter struct {
 }
 
 func (r *RecommendRouter) Setup() {
-	api := r.handler.Gin.Group("/api").Use(r.authMiddleware.AuthorizationWithCookie())
+	api := r.handler.Gin.Group("/api").Use(r.authMiddleware.Handler())
 	{
 		api.POST("/answer", r.recommendController.Answer)
 		api.GET("/get-user-matches", r.recommendController.GetUserMatches)
