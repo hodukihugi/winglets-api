@@ -84,13 +84,13 @@ func (s *AuthService) Register(request models.RegisterRequest) (*models.User, er
 	}
 
 	//generate verification token
-	randomBytes := make([]byte, 26)
+	randomBytes := make([]byte, 10)
 	_, err = rand.Read(randomBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	verificationCode := base32.StdEncoding.EncodeToString(randomBytes)[:26]
+	verificationCode := base32.StdEncoding.EncodeToString(randomBytes)[:10]
 
 	registerUser := models.User{
 		Email:              request.Email,

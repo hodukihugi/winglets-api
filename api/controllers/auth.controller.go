@@ -187,10 +187,9 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	//send verification token to user's email
 	var wg sync.WaitGroup
 	ch := make(chan error, 1)
-	origin := "http://localhost:8080/api"
 	email := []string{result.Email}
 	wg.Add(1)
-	go utils.SendVerificationEmailAsync(&wg, ch, c.env, origin, result.VerificationCode, email)
+	go utils.SendVerificationEmailAsync(&wg, ch, c.env, result.VerificationCode, email)
 	wg.Wait()
 	if err = <-ch; err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
@@ -208,7 +207,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 
 // VerifyEmail verify user email
 func (c *AuthController) VerifyEmail(ctx *gin.Context) {
-	verifyToken, ok := ctx.GetQuery("token")
+	/*verifyToken, ok := ctx.GetQuery("token")
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
 			Message: "invalid request",
@@ -222,11 +221,17 @@ func (c *AuthController) VerifyEmail(ctx *gin.Context) {
 			Message: "invalid request",
 		})
 		return
+	}*/
+
+	var verifyEmailRequest models.VerifyEmailRequest
+	if err := ctx.ShouldBindJSON(&verifyEmailRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "fail to parse request body",
+		})
+		return
 	}
 
-	email = strings.Trim(email, "[]")
-	c.logger.Debugf("Email after trim: %s", email)
-
+	email, verifyToken := verifyEmailRequest.Email, verifyEmailRequest.VerificationCode
 	verificationRequest := models.VerifyEmailRequest{
 		Email:            email,
 		VerificationCode: verifyToken,
@@ -334,7 +339,7 @@ func (c *AuthController) SendVerificationEmail(ctx *gin.Context) {
 	}
 
 	//generate verification token
-	randomBytes := make([]byte, 26)
+	randomBytes := make([]byte, 10)
 	_, err = rand.Read(randomBytes)
 	if err != nil {
 		c.logger.Debug(err)
@@ -344,7 +349,7 @@ func (c *AuthController) SendVerificationEmail(ctx *gin.Context) {
 		return
 	}
 
-	verificationCode := base32.StdEncoding.EncodeToString(randomBytes)[:26]
+	verificationCode := base32.StdEncoding.EncodeToString(randomBytes)[:10]
 
 	err = c.userService.UpdateById(result.ID, models.UserUpdateRequest{
 		VerificationCode: verificationCode,
@@ -362,10 +367,9 @@ func (c *AuthController) SendVerificationEmail(ctx *gin.Context) {
 	//send verification token to user's email
 	var wg sync.WaitGroup
 	ch := make(chan error, 1)
-	origin := "http://localhost:8080/api"
 	email := []string{request.Email}
 	wg.Add(1)
-	go utils.SendVerificationEmailAsync(&wg, ch, c.env, origin, verificationCode, email)
+	go utils.SendVerificationEmailAsync(&wg, ch, c.env, verificationCode, email)
 	wg.Wait()
 	if err = <-ch; err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
