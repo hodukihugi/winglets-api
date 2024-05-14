@@ -12,12 +12,13 @@ type AuthRouter struct {
 	handler        *core.RequestHandler
 	authController *controllers.AuthController
 	authMiddleware *middlewares.JWTMiddleware
+	corsMiddleware *middlewares.CorsMiddleware
 }
 
 // Setup user routes
 func (s *AuthRouter) Setup() {
 	s.logger.Info("Setting up routes")
-	auth := s.handler.Gin.Group("/api/auth")
+	auth := s.handler.Gin.Group("/api/auth").Use()
 	{
 		auth.POST("/login", s.authController.SignIn)
 		auth.POST("/register", s.authController.Register)
@@ -32,6 +33,7 @@ func NewAuthRouter(
 	handler *core.RequestHandler,
 	authController *controllers.AuthController,
 	authMiddleware *middlewares.JWTMiddleware,
+	corsMiddleware *middlewares.CorsMiddleware,
 	logger *core.Logger,
 ) *AuthRouter {
 	return &AuthRouter{
@@ -39,5 +41,6 @@ func NewAuthRouter(
 		logger:         logger,
 		authController: authController,
 		authMiddleware: authMiddleware,
+		corsMiddleware: corsMiddleware,
 	}
 }

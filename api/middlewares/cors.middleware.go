@@ -25,7 +25,7 @@ func NewCorsMiddleware(handler *core.RequestHandler, logger *core.Logger, env *c
 func (m *CorsMiddleware) Setup() {
 	m.logger.Info("Setting up cors middleware")
 
-	if m.env.Environment == "development" {
+	if m.env.Environment != "development" {
 		return
 	}
 
