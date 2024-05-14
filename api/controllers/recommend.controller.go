@@ -75,6 +75,21 @@ func (c *RecommendController) GetUserMatches(ctx *gin.Context) {
 
 }
 
+func (c *RecommendController) GetQuestions(ctx *gin.Context) {
+	questions, err := c.service.GetListQuestions()
+	if err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+	}
+
+	ctx.JSON(http.StatusOK, models.HTTPResponse{
+		Message: "success",
+		Data:    map[string]interface{}{"questions": questions},
+	})
+}
+
 func (c *RecommendController) GetRecommendations(ctx *gin.Context) {
 	var err error
 	var request models.GetRecommendationRequest
@@ -109,7 +124,7 @@ func (c *RecommendController) GetRecommendations(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
 		Message: "get recommendations success",
-		Data:    profiles,
+		Data:    map[string]interface{}{"profiles": profiles},
 	})
 
 }

@@ -15,29 +15,33 @@ import (
 type IRecommendService interface {
 	CreateUserAnswer(models.SerializableAnswer) error
 	GetMatchesById(string) error
+	GetListQuestions() ([]models.SerializableQuestion, error)
 	GetRecommendationById(string, int, int, float64, float64) ([]models.MatchProfile, error)
 	SmashById(string) error
 	PassById(string) error
 }
 
 type RecommendService struct {
-	profileRepository repositories.IProfileRepository
-	answerRepository  repositories.IAnswerRepository
-	matchRepository   repositories.IMatchRepository
-	logger            *core.Logger
+	profileRepository  repositories.IProfileRepository
+	answerRepository   repositories.IAnswerRepository
+	matchRepository    repositories.IMatchRepository
+	questionRepository repositories.IQuestionRepository
+	logger             *core.Logger
 }
 
 func NewRecommendService(
 	profileRepository repositories.IProfileRepository,
 	answerRepository repositories.IAnswerRepository,
 	matchRepository repositories.IMatchRepository,
+	questionRepository repositories.IQuestionRepository,
 	logger *core.Logger,
 ) IRecommendService {
 	return &RecommendService{
-		profileRepository: profileRepository,
-		answerRepository:  answerRepository,
-		matchRepository:   matchRepository,
-		logger:            logger,
+		profileRepository:  profileRepository,
+		answerRepository:   answerRepository,
+		matchRepository:    matchRepository,
+		questionRepository: questionRepository,
+		logger:             logger,
 	}
 }
 
@@ -75,6 +79,21 @@ func (s *RecommendService) CreateUserAnswer(answer models.SerializableAnswer) er
 
 func (s *RecommendService) GetMatchesById(id string) error {
 	return errors.New("not implemented")
+}
+
+func (s *RecommendService) GetListQuestions() ([]models.SerializableQuestion, error) {
+	var result []models.SerializableQuestion
+	questions, err := s.questionRepository.GetListQuestions()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, question := range questions {
+		serializeQuestion := question.Serialize()
+		result = append(result, *serializeQuestion)
+	}
+
+	return result, nil
 }
 
 func (s *RecommendService) GetRecommendationById(

@@ -8,4 +8,5 @@ var Module = fx.Options(
 	fx.Provide(NewProfileRepository),
 	fx.Provide(NewAnswerRepository),
 	fx.Provide(NewMatchRepository),
+	fx.Provide(NewQuestionRepository),
 )
