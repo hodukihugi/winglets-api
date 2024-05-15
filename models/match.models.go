@@ -8,8 +8,8 @@ type MatchCalculationResult struct {
 }
 
 type GetRecommendationRequest struct {
-	MinAge      int     `json:"minAge"`
-	MaxAge      int     `json:"maxAge"`
+	MinAge      int     `json:"min_age"`
+	MaxAge      int     `json:"max_age"`
 	MinDistance float64 `json:"min_distance"`
 	MaxDistance float64 `json:"max_distance"`
 }

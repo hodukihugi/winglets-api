@@ -14,9 +14,10 @@ import (
 
 type IRecommendService interface {
 	CreateUserAnswer(models.SerializableAnswer) error
-	GetMatchesById(string) error
+	GetMatchesByUserId(string) error
+	GetAnswersByUserId(string) ([]models.SerializableAnswer, error)
 	GetListQuestions() ([]models.SerializableQuestion, error)
-	GetRecommendationById(string, int, int, float64, float64) ([]models.MatchProfile, error)
+	GetRecommendationByUserId(string, int, int, float64, float64) ([]models.MatchProfile, error)
 	SmashById(string) error
 	PassById(string) error
 }
@@ -77,8 +78,22 @@ func (s *RecommendService) CreateUserAnswer(answer models.SerializableAnswer) er
 	return err
 }
 
-func (s *RecommendService) GetMatchesById(id string) error {
+func (s *RecommendService) GetMatchesByUserId(id string) error {
 	return errors.New("not implemented")
+}
+
+func (s *RecommendService) GetAnswersByUserId(id string) ([]models.SerializableAnswer, error) {
+	var result []models.SerializableAnswer
+	answers, err := s.answerRepository.FindListAnswerByUserId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, answer := range answers {
+		serializableAnswer := answer.Serialize()
+		result = append(result, *serializableAnswer)
+	}
+	return result, nil
 }
 
 func (s *RecommendService) GetListQuestions() ([]models.SerializableQuestion, error) {
@@ -96,7 +111,7 @@ func (s *RecommendService) GetListQuestions() ([]models.SerializableQuestion, er
 	return result, nil
 }
 
-func (s *RecommendService) GetRecommendationById(
+func (s *RecommendService) GetRecommendationByUserId(
 	userId string,
 	minAge int,
 	maxAge int,

@@ -91,6 +91,7 @@ func (r *ProfileRepository) GetListProfile(filter models.ProfileFilter) ([]model
 
 	db := r.Database.Model(&models.Profile{})
 	var profiles, results []models.Profile
+	r.logger.Info(fmt.Sprintf("Filter: %+v", filter))
 	if filter.MinAge > 0 && filter.MinDistance >= 0 && filter.Longitude != 0 && filter.Latitude != 0 {
 		minimum := time.Now().AddDate(-filter.MaxAge, 0, 0).UTC()
 		maximum := time.Now().AddDate(-filter.MinAge, 0, 0).UTC()

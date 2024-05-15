@@ -17,7 +17,8 @@ func (r *RecommendRouter) Setup() {
 	api := r.handler.Gin.Group("/api").Use(r.authMiddleware.Handler())
 	{
 		api.POST("/answer", r.recommendController.Answer)
-		api.GET("/get-user-matches", r.recommendController.GetUserMatches)
+		api.GET("/get-matches", r.recommendController.GetUserMatches)
+		api.GET("/get-answers", r.recommendController.GetUserAnswers)
 		api.GET("/get-questions", r.recommendController.GetQuestions)
 		api.GET("/get-recommendations", r.recommendController.GetRecommendations)
 		api.POST("/smash/:id", r.recommendController.Smash)

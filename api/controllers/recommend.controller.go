@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/hodukihugi/winglets-api/core"
 	"github.com/hodukihugi/winglets-api/models"
@@ -75,6 +76,30 @@ func (c *RecommendController) GetUserMatches(ctx *gin.Context) {
 
 }
 
+func (c *RecommendController) GetUserAnswers(ctx *gin.Context) {
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	userAnswers, err := c.service.GetAnswersByUserId(userID)
+	if err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+	}
+
+	ctx.JSON(http.StatusOK, models.HTTPResponse{
+		Message: "success",
+		Data:    map[string]interface{}{"answers": userAnswers},
+	})
+}
+
 func (c *RecommendController) GetQuestions(ctx *gin.Context) {
 	questions, err := c.service.GetListQuestions()
 	if err != nil {
@@ -103,7 +128,7 @@ func (c *RecommendController) GetRecommendations(ctx *gin.Context) {
 
 	minAgeInt, maxAgeInt := request.MinAge, request.MaxAge
 	minDistanceFloat, maxDistanceFloat := request.MinDistance, request.MaxDistance
-
+	c.logger.Info(fmt.Sprintf("Request: %+v", request))
 	userID, err := utils.GetUserID(ctx)
 	if err != nil {
 		c.logger.Error(err)
@@ -113,7 +138,7 @@ func (c *RecommendController) GetRecommendations(ctx *gin.Context) {
 		return
 	}
 
-	profiles, err := c.service.GetRecommendationById(userID, minAgeInt, maxAgeInt, minDistanceFloat, maxDistanceFloat)
+	profiles, err := c.service.GetRecommendationByUserId(userID, minAgeInt, maxAgeInt, minDistanceFloat, maxDistanceFloat)
 	if err != nil {
 		c.logger.Error(err)
 		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
