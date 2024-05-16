@@ -89,9 +89,16 @@ func (c *RecommendController) GetUserAnswers(ctx *gin.Context) {
 	userAnswers, err := c.service.GetAnswersByUserId(userID)
 	if err != nil {
 		c.logger.Error(err)
-		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
-			Message: "server error",
-		})
+		if err.Error() == "user answers not found" {
+			ctx.JSON(http.StatusConflict, models.HTTPResponse{
+				Message: "user answers not found",
+			})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+				Message: "server error",
+			})
+		}
+		return
 	}
 
 	ctx.JSON(http.StatusOK, models.HTTPResponse{

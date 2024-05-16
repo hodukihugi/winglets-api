@@ -105,12 +105,14 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 	}
 
 	utils.AttachCookiesToResponse(c.env, accessToken, refreshToken, ctx)
-	ctx.JSON(http.StatusCreated, models.HTTPResponse{Message: "success", Data: map[string]interface{}{
-		"access_token":    accessToken,
-		"refresh_token":   refreshToken,
-		"access_expired":  accessExpired,
-		"refresh_expired": refreshExpired,
-	}})
+	ctx.JSON(http.StatusCreated, models.HTTPResponse{
+		Message: "success",
+		Data: map[string]interface{}{
+			"access_token":    accessToken,
+			"refresh_token":   refreshToken,
+			"access_expired":  accessExpired,
+			"refresh_expired": refreshExpired,
+		}})
 	return
 }
 

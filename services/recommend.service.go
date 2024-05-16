@@ -93,6 +93,11 @@ func (s *RecommendService) GetAnswersByUserId(id string) ([]models.SerializableA
 		serializableAnswer := answer.Serialize()
 		result = append(result, *serializableAnswer)
 	}
+
+	if result == nil || len(result) == 0 {
+		return nil, errors.New("user answers not found")
+	}
+
 	return result, nil
 }
 
