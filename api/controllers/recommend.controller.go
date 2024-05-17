@@ -162,9 +162,79 @@ func (c *RecommendController) GetRecommendations(ctx *gin.Context) {
 }
 
 func (c *RecommendController) Smash(ctx *gin.Context) {
+	var request models.SmashRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "fail to parse request",
+		})
+	}
 
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+	}
+
+	message, profile, err := c.service.SmashById(userID, request.UserId)
+	if err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	if message != "match wait" && message != "match finish" {
+		c.logger.Error(message)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	if message == "match wait" {
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
+			Message: "success, match wait",
+		})
+	} else {
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
+			Message: "success, match finish",
+			Data: map[string]*models.Profile{
+				"profile": profile,
+			},
+		})
+	}
 }
 
 func (c *RecommendController) Pass(ctx *gin.Context) {
+	var request models.PassRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+			Message: "fail to parse request",
+		})
+	}
 
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+	}
+
+	if err := c.service.PassById(userID, request.UserId); err != nil {
+		c.logger.Error(err)
+		ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+			Message: "server error",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.HTTPResponse{
+		Message: "success",
+	})
 }

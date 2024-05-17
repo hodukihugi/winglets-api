@@ -21,8 +21,8 @@ func (r *RecommendRouter) Setup() {
 		api.GET("/get-answers", r.recommendController.GetUserAnswers)
 		api.GET("/get-questions", r.recommendController.GetQuestions)
 		api.GET("/get-recommendations", r.recommendController.GetRecommendations)
-		api.POST("/smash/:id", r.recommendController.Smash)
-		api.POST("/pass/:id", r.recommendController.Pass)
+		api.POST("/smash", r.recommendController.Smash)
+		api.POST("/pass", r.recommendController.Pass)
 	}
 }
 

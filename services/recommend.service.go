@@ -18,8 +18,8 @@ type IRecommendService interface {
 	GetAnswersByUserId(string) ([]models.SerializableAnswer, error)
 	GetListQuestions() ([]models.SerializableQuestion, error)
 	GetRecommendationByUserId(string, int, int, float64, float64) ([]models.MatchProfile, error)
-	SmashById(string) error
-	PassById(string) error
+	SmashById(string, string) (string, *models.Profile, error)
+	PassById(string, string) error
 }
 
 type RecommendService struct {
@@ -225,10 +225,43 @@ func (s *RecommendService) GetRecommendationByUserId(
 	return recommendedProfiles, nil
 }
 
-func (s *RecommendService) SmashById(id string) error {
-	return errors.New("not implemented")
+func (s *RecommendService) SmashById(matcherId string, matcheeId string) (string, *models.Profile, error) {
+	// Kiểm tra xem người mình quẹt phải đã quẹt phải mình chưa
+	existedMatch, err := s.matchRepository.First(matcheeId, matcherId)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.logger.Error(err)
+		return "", nil, err
+	}
+
+	matcheeProfile, err := s.profileRepository.GetProfileById(matcheeId)
+	if err != nil {
+		s.logger.Error(err)
+		return "", nil, err
+	}
+
+	var message string
+
+	if existedMatch == nil || existedMatch.MatcherId == "" || matcheeId == "" {
+		// Chưa có người quẹt => Tạo Match mới
+		s.matchRepository.Create(models.Match{
+			MatcherId:   matcherId,
+			MatcheeId:   matcheeId,
+			MatchStatus: 0, // Status = 0 là đợi người kia match
+		})
+		message = "match wait"
+	} else {
+		// Đã có người quẹt => Match người đó
+		s.matchRepository.Match(models.Match{
+			MatcherId:   matcherId,
+			MatcheeId:   matcheeId,
+			MatchStatus: 1, // Status = 1 là match lại với nhau
+		})
+		message = "match finish"
+	}
+
+	return message, matcheeProfile, nil
 }
 
-func (s *RecommendService) PassById(id string) error {
+func (s *RecommendService) PassById(passerId string, passeeId string) error {
 	return errors.New("not implemented")
 }
