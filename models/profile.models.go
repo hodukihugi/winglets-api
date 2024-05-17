@@ -20,7 +20,6 @@ type Profile struct {
 	Hobby       string    `gorm:"column:hobby"`
 	Language    string    `gorm:"column:language"`
 	Education   string    `gorm:"column:education"`
-	Location    string    `gorm:"column:location"`
 	HomeTown    string    `gorm:"column:home_town"`
 	Coordinates string    `gorm:"column:coordinates"`
 	ImageId1    string    `gorm:"column:image_id_1"`
@@ -56,7 +55,6 @@ func (p *Profile) Serialize() *SerializableProfile {
 		Hobby:     strings.Split(p.Hobby, ","),
 		Language:  strings.Split(p.Language, ","),
 		Education: p.Education,
-		Location:  p.Location,
 		HomeTown:  p.HomeTown,
 		Image1:    p.ImageUrl1,
 		Image2:    p.ImageUrl2,
@@ -81,7 +79,6 @@ func (p *Profile) ConvertToMatchProfile() *MatchProfile {
 		Hobby:     strings.Split(p.Hobby, ","),
 		Language:  strings.Split(p.Language, ","),
 		Education: p.Education,
-		Location:  p.Location,
 		HomeTown:  p.HomeTown,
 		Image1:    p.ImageUrl1,
 		Image2:    p.ImageUrl2,
@@ -187,6 +184,7 @@ type ProfileImageDeleteRequest struct {
 
 type ProfileFilter struct {
 	ExcludedUserId string
+	Gender         string
 	MinAge         int
 	MaxAge         int
 	MinDistance    float64

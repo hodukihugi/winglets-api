@@ -202,29 +202,13 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
-		Message: "signup successfully, check your mail to verify your account",
+		Message: "success",
 	})
 	return
 }
 
 // VerifyEmail verify user email
 func (c *AuthController) VerifyEmail(ctx *gin.Context) {
-	/*verifyToken, ok := ctx.GetQuery("token")
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
-			Message: "invalid request",
-		})
-		return
-	}
-
-	email, ok := ctx.GetQuery("email")
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
-			Message: "invalid request",
-		})
-		return
-	}*/
-
 	var verifyEmailRequest models.VerifyEmailRequest
 	if err := ctx.ShouldBindJSON(&verifyEmailRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
@@ -296,7 +280,7 @@ func (c *AuthController) VerifyEmail(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
-		Message: "verify email success",
+		Message: "success",
 	})
 }
 
@@ -382,7 +366,7 @@ func (c *AuthController) SendVerificationEmail(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
-		Message: "signup successfully, check your mail to verify your account",
+		Message: "success",
 	})
 	return
 }

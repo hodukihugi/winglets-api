@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS `profiles` (
     `hobby` TEXT,
     `language` TEXT,
     `education` VARCHAR(255),
-    `location` VARCHAR(255),
     `home_town` VARCHAR(255),
     `coordinates` VARCHAR(255),
     `image_id_1` VARCHAR(50) DEFAULT NULL,

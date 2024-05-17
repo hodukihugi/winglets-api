@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS `matches` (
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `deleted_at` DATETIME DEFAULT NULL,
     PRIMARY KEY (`matcher_id`, `matchee_id`),
-    CONSTRAINT `fk_match_id` FOREIGN KEY (`matcher_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+    CONSTRAINT `fk_matcher_id` FOREIGN KEY (`matcher_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_matchee_id` FOREIGN KEY (`matchee_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

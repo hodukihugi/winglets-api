@@ -23,11 +23,12 @@ type IRecommendService interface {
 }
 
 type RecommendService struct {
-	profileRepository  repositories.IProfileRepository
-	answerRepository   repositories.IAnswerRepository
-	matchRepository    repositories.IMatchRepository
-	questionRepository repositories.IQuestionRepository
-	logger             *core.Logger
+	profileRepository           repositories.IProfileRepository
+	answerRepository            repositories.IAnswerRepository
+	matchRepository             repositories.IMatchRepository
+	questionRepository          repositories.IQuestionRepository
+	recommendationBinRepository repositories.IRecommendationBinRepository
+	logger                      *core.Logger
 }
 
 func NewRecommendService(
@@ -35,14 +36,16 @@ func NewRecommendService(
 	answerRepository repositories.IAnswerRepository,
 	matchRepository repositories.IMatchRepository,
 	questionRepository repositories.IQuestionRepository,
+	recommendationBinRepository repositories.IRecommendationBinRepository,
 	logger *core.Logger,
 ) IRecommendService {
 	return &RecommendService{
-		profileRepository:  profileRepository,
-		answerRepository:   answerRepository,
-		matchRepository:    matchRepository,
-		questionRepository: questionRepository,
-		logger:             logger,
+		profileRepository:           profileRepository,
+		answerRepository:            answerRepository,
+		matchRepository:             matchRepository,
+		questionRepository:          questionRepository,
+		recommendationBinRepository: recommendationBinRepository,
+		logger:                      logger,
 	}
 }
 
@@ -138,8 +141,16 @@ func (s *RecommendService) GetRecommendationByUserId(
 		return nil, err
 	}
 
+	var interestedIn string
+	if userProfile.Gender == "male" {
+		interestedIn = "female"
+	} else {
+		interestedIn = "male"
+	}
+
 	satisfiedProfiles, err := s.profileRepository.GetListProfile(models.ProfileFilter{
 		ExcludedUserId: userId,
+		Gender:         interestedIn,
 		MinAge:         minAge,
 		MaxAge:         maxAge,
 		MinDistance:    minDistance,
@@ -203,7 +214,14 @@ func (s *RecommendService) GetRecommendationByUserId(
 		matchProfile.MatchPercentage = result.MatchPercentage
 		recommendedProfiles = append(recommendedProfiles, *matchProfile)
 	}
-	// TODO: Lưu những profile đã được gợi í
+
+	for _, recommendedProfile := range recommendedProfiles {
+		s.recommendationBinRepository.Create(models.RecommendationBin{
+			UserID:            userId,
+			RecommendedUserID: recommendedProfile.ID,
+		})
+	}
+
 	return recommendedProfiles, nil
 }
 

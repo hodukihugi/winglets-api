@@ -96,17 +96,14 @@ func (r *ProfileRepository) GetListProfile(filter models.ProfileFilter) ([]model
 		minimum := time.Now().AddDate(-filter.MaxAge, 0, 0).UTC()
 		maximum := time.Now().AddDate(-filter.MinAge, 0, 0).UTC()
 		r.logger.Debugf("Min birthday: %v, Max birthday: %v", minimum, maximum)
-		if filter.ExcludedUserId != "" {
-			db.Where("id <> ? AND birthday >= ? AND birthday <= ?",
-				filter.ExcludedUserId,
-				minimum,
-				maximum).
-				Find(&profiles)
-			r.logger.Debugf("Excluded ID: %s ", filter.ExcludedUserId)
-		} else {
-			db.Where("birthday >= ? AND birthday <= ?", minimum, maximum).Find(&profiles)
-		}
-
+		db.
+			Where("gender = ? "+
+				"AND birthday >= ? AND birthday <= ? "+
+				"AND id NOT IN (SELECT recommended_user_id FROM recommendation_bins WHERE user_id = ?) "+
+				"AND id <> ?",
+				filter.Gender, minimum, maximum, filter.ExcludedUserId, filter.ExcludedUserId).
+			Limit(20).
+			Find(&profiles)
 		for _, profile := range profiles {
 			longitude, latitude, err := utils.CoordinatesStringToPairFloat64(profile.Coordinates)
 

@@ -155,7 +155,7 @@ func (c *RecommendController) GetRecommendations(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
-		Message: "get recommendations success",
+		Message: "success",
 		Data:    map[string]interface{}{"profiles": profiles},
 	})
 

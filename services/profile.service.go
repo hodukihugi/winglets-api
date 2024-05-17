@@ -44,7 +44,6 @@ func (s *ProfileService) CreateProfile(userID string, request models.ProfileCrea
 		Hobby:       strings.Join(request.Hobby, ","),
 		Language:    strings.Join(request.Language, ","),
 		Education:   request.Education,
-		Location:    request.Location,
 		HomeTown:    request.HomeTown,
 		Coordinates: strings.Join(coordinates, ","),
 	})
@@ -75,7 +74,6 @@ func (s *ProfileService) UpdateProfileById(id string, request models.ProfileUpda
 		Hobby:       strings.Join(request.Hobby, ","),
 		Language:    strings.Join(request.Language, ","),
 		Education:   request.Education,
-		Location:    request.Location,
 		HomeTown:    request.HomeTown,
 		Coordinates: strings.Join(coordinates, ","),
 		ImageId1:    request.ImageId1,

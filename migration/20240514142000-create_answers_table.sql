@@ -3,8 +3,8 @@ DROP TABLE IF EXISTS `answers`;
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS `answers` (
-                                         `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-                                         `user_id` VARCHAR(36) NOT NULL,
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(36) NOT NULL,
     `question_id` INT NOT NULL,
     `user_answer` INT DEFAULT 0,
     `prefer_answer` INT DEFAULT 0,

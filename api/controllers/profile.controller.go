@@ -62,7 +62,7 @@ func (c *ProfileController) CreateProfile(ctx *gin.Context) {
 		return
 	} else {
 		ctx.JSON(http.StatusCreated, models.HTTPResponse{
-			Message: "Create new profile successfully",
+			Message: "success",
 		})
 	}
 }
@@ -76,7 +76,7 @@ func (c *ProfileController) GetProfileById(ctx *gin.Context) {
 		return
 	} else {
 		ctx.JSON(http.StatusNotFound, models.HTTPResponse{
-			Message: "Get profile by id successfully",
+			Message: "success",
 			Data:    data,
 		})
 	}
@@ -101,7 +101,7 @@ func (c *ProfileController) GetMyProfile(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
-		Message: "Get user profile successfully",
+		Message: "success",
 		Data:    result.Serialize(),
 	})
 }
@@ -130,7 +130,7 @@ func (c *ProfileController) UpdateProfile(ctx *gin.Context) {
 		return
 	} else {
 		ctx.JSON(http.StatusOK, models.HTTPResponse{
-			Message: "Update profile successfully",
+			Message: "success",
 		})
 	}
 }
@@ -229,7 +229,7 @@ func (c *ProfileController) UploadImage(ctx *gin.Context) {
 			})
 		} else {
 			ctx.JSON(http.StatusOK, models.HTTPResponse{
-				Message: "Upload profile image successfully",
+				Message: "success",
 			})
 		}
 	}
@@ -307,7 +307,7 @@ func (c *ProfileController) RemoveImage(ctx *gin.Context) {
 		return
 	} else {
 		ctx.JSON(http.StatusOK, models.HTTPResponse{
-			Message: "Remove profile images successfully",
+			Message: "success",
 		})
 	}
 }
@@ -329,7 +329,7 @@ func (c *ProfileController) DeleteProfile(ctx *gin.Context) {
 		return
 	} else {
 		ctx.JSON(http.StatusOK, models.HTTPResponse{
-			Message: "Delete profile successfully",
+			Message: "success",
 		})
 	}
 }
