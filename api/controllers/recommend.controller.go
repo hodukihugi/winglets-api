@@ -202,8 +202,8 @@ func (c *RecommendController) Smash(ctx *gin.Context) {
 	} else {
 		ctx.JSON(http.StatusOK, models.HTTPResponse{
 			Message: "success, match finish",
-			Data: map[string]*models.Profile{
-				"profile": profile,
+			Data: map[string]*models.SerializableProfile{
+				"profile": profile.Serialize(),
 			},
 		})
 	}

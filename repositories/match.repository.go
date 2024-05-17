@@ -32,7 +32,7 @@ func (r *MatchRepository) First(matcherId, matcheeId string) (*models.Match, err
 		return nil, errors.New("matcher id or matchee is empty")
 	}
 
-	if err := db.Where("matcher_id = ? AND matchee_id = ?", matcheeId, matcheeId).First(&match).Error; err != nil {
+	if err := db.Where("matcher_id = ? AND matchee_id = ?", matcherId, matcheeId).First(&match).Error; err != nil {
 		return nil, err
 	}
 
