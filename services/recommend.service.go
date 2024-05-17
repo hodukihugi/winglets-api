@@ -241,7 +241,7 @@ func (s *RecommendService) SmashById(matcherId string, matcheeId string) (string
 
 	var message string
 
-	if existedMatch == nil || existedMatch.MatcherId == "" || matcheeId == "" {
+	if existedMatch == nil || existedMatch.MatcherId == "" || existedMatch.MatcheeId == "" {
 		// Chưa có người quẹt => Tạo Match mới
 		s.matchRepository.Create(models.Match{
 			MatcherId:   matcherId,
@@ -250,8 +250,8 @@ func (s *RecommendService) SmashById(matcherId string, matcheeId string) (string
 		})
 		message = "match wait"
 	} else {
-		// Đã có người quẹt => Match người đó
-		s.matchRepository.Match(models.Match{
+		// Đã có người quẹt => Update match đó
+		s.matchRepository.Update(models.Match{
 			MatcherId:   matcherId,
 			MatcheeId:   matcheeId,
 			MatchStatus: 1, // Status = 1 là match lại với nhau
@@ -263,5 +263,28 @@ func (s *RecommendService) SmashById(matcherId string, matcheeId string) (string
 }
 
 func (s *RecommendService) PassById(passerId string, passeeId string) error {
-	return errors.New("not implemented")
+	// Kiểm tra xem người mình quẹt phải đã quẹt phải mình chưa
+	existedMatch, err := s.matchRepository.First(passeeId, passerId)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.logger.Error(err)
+		return err
+	}
+
+	if existedMatch == nil || existedMatch.MatcherId == "" || existedMatch.MatcheeId == "" {
+		// Chưa có người quẹt => Tạo Match mới
+		s.matchRepository.Create(models.Match{
+			MatcherId:   passerId,
+			MatcheeId:   passeeId,
+			MatchStatus: 2, // Status = 2 là không thích người kia
+		})
+	} else {
+		// Đã có người quẹt => Update match đó
+		s.matchRepository.Update(models.Match{
+			MatcherId:   passerId,
+			MatcheeId:   passeeId,
+			MatchStatus: 2, // Status = 2 là không thích người kia
+		})
+	}
+
+	return nil
 }

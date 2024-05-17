@@ -9,8 +9,7 @@ import (
 type IMatchRepository interface {
 	First(string, string) (*models.Match, error)
 	Create(models.Match) error
-	Match(models.Match) error
-	Pass(models.Match) error
+	Update(models.Match) error
 }
 
 type MatchRepository struct {
@@ -48,7 +47,7 @@ func (r *MatchRepository) Create(match models.Match) error {
 	return nil
 }
 
-func (r *MatchRepository) Match(match models.Match) error {
+func (r *MatchRepository) Update(match models.Match) error {
 	db := r.Database.Model(models.Match{})
 
 	// Kiểm tra xem đã có match record chưa, nếu chưa có thì trở về
@@ -58,13 +57,9 @@ func (r *MatchRepository) Match(match models.Match) error {
 
 	// Nếu đã có thì update match status lên 1
 	if err := db.Where("matcher_id = ? AND matchee_id = ?", match.MatcherId, match.MatcheeId).
-		Update("match_status", 1).Error; err != nil {
+		Update("match_status", match.MatchStatus).Error; err != nil {
 		return err
 	}
 	return nil
 
-}
-
-func (r *MatchRepository) Pass(match models.Match) error {
-	return errors.New("not implemented")
 }

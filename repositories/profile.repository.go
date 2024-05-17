@@ -100,8 +100,13 @@ func (r *ProfileRepository) GetListProfile(filter models.ProfileFilter) ([]model
 			Where("gender = ? "+
 				"AND birthday >= ? AND birthday <= ? "+
 				"AND id NOT IN (SELECT recommended_user_id FROM recommendation_bins WHERE user_id = ?) "+
+				"AND id NOT IN (SELECT matcher_id FROM matches WHERE matchee_id = ? AND match_status = 2) "+
 				"AND id <> ?",
-				filter.Gender, minimum, maximum, filter.ExcludedUserId, filter.ExcludedUserId).
+				filter.Gender,
+				minimum, maximum,
+				filter.ExcludedUserId,
+				filter.ExcludedUserId,
+				filter.ExcludedUserId).
 			Limit(20).
 			Find(&profiles)
 		for _, profile := range profiles {
