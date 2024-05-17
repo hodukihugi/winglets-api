@@ -69,7 +69,7 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 	user, err := c.userService.First(models.OneUserFilter{Email: payload.Email})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNoContent, models.HTTPResponse{
+			ctx.JSON(http.StatusOK, models.HTTPResponse{
 				Message: "user not found",
 			})
 			return
@@ -311,7 +311,7 @@ func (c *AuthController) SendVerificationEmail(ctx *gin.Context) {
 	})
 
 	if err != nil {
-		ctx.JSON(http.StatusNoContent, models.HTTPResponse{
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
 			Message: "user not exist",
 		})
 		return

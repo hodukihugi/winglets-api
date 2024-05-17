@@ -70,7 +70,7 @@ func (c *ProfileController) CreateProfile(ctx *gin.Context) {
 func (c *ProfileController) GetProfileById(ctx *gin.Context) {
 	data, err := c.service.GetProfileById(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusNoContent, models.HTTPResponse{
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
 			Message: err.Error(),
 		})
 		return
@@ -94,7 +94,7 @@ func (c *ProfileController) GetMyProfile(ctx *gin.Context) {
 	result, err := c.service.GetProfileById(userID)
 
 	if err != nil {
-		ctx.JSON(http.StatusNoContent, models.HTTPResponse{
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
 			Message: "profile not found",
 		})
 		return
@@ -323,7 +323,7 @@ func (c *ProfileController) DeleteProfile(ctx *gin.Context) {
 
 	err = c.service.DeleteProfileById(userID)
 	if err != nil {
-		ctx.JSON(http.StatusNoContent, models.HTTPResponse{
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
 			Message: err.Error(),
 		})
 		return
