@@ -34,6 +34,7 @@ func (s *ProfileService) CreateProfile(userID string, request models.ProfileCrea
 		fmt.Sprintf("%.6f", request.Coordinates.Longitude),
 		fmt.Sprintf("%.6f", request.Coordinates.Latitude),
 	}
+
 	_, err := s.repository.CreateProfile(models.Profile{
 		ID:          userID,
 		Name:        request.Name,

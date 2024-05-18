@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `profiles` (
     `name` VARCHAR(255) NOT NULL,
     `gender` VARCHAR(10),
     `birthday` DATETIME,
-    `height` INT,
+    `height` VARCHAR(50),
     `horoscope` VARCHAR(50),
     `hobby` TEXT,
     `language` TEXT,

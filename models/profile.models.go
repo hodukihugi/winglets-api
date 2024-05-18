@@ -15,7 +15,7 @@ type Profile struct {
 	Name        string    `gorm:"column:name"`
 	Gender      string    `gorm:"column:gender"`
 	Birthday    time.Time `gorm:"column:birthday"`
-	Height      int       `gorm:"column:height"`
+	Height      string    `gorm:"column:height"`
 	Horoscope   string    `gorm:"column:horoscope"`
 	Hobby       string    `gorm:"column:hobby"`
 	Language    string    `gorm:"column:language"`
@@ -93,7 +93,7 @@ type SerializableProfile struct {
 	Name              string   `json:"name"`
 	Gender            string   `json:"gender"`
 	BirthdayInSeconds int64    `json:"birthday_in_seconds"`
-	Height            int      `json:"height"`
+	Height            string   `json:"height"`
 	Horoscope         string   `json:"horoscope"`
 	Hobby             []string `json:"hobby"`
 	Language          []string `json:"language"`
@@ -112,7 +112,7 @@ type MatchProfile struct {
 	Name            string    `json:"name"`
 	Gender          string    `json:"gender"`
 	Birthday        time.Time `json:"birthday"`
-	Height          int       `json:"height"`
+	Height          string    `json:"height"`
 	Horoscope       string    `json:"horoscope"`
 	Hobby           []string  `json:"hobby"`
 	Language        []string  `json:"language"`
@@ -132,7 +132,7 @@ type ProfileCreateRequest struct {
 	Name              string   `json:"name" validate:"required"`
 	Gender            string   `json:"gender" validate:"oneof=male female,required"`
 	BirthdayInSeconds int64    `json:"birthday_in_seconds" validate:"required"`
-	Height            int      `json:"height"`
+	Height            string   `json:"height"`
 	Horoscope         string   `json:"horoscope"`
 	Hobby             []string `json:"hobby"`
 	Language          []string `json:"language"`
@@ -149,7 +149,7 @@ type ProfileUpdateRequest struct {
 	Name              string   `json:"name"`
 	Gender            string   `json:"gender" validate:"oneof=male female"`
 	BirthdayInSeconds int64    `json:"birthday_in_seconds"`
-	Height            int      `json:"height"`
+	Height            string   `json:"height"`
 	Horoscope         string   `json:"horoscope"`
 	Hobby             []string `json:"hobby"`
 	Language          []string `json:"language"`
