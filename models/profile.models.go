@@ -46,21 +46,21 @@ func (p *Profile) Serialize() *SerializableProfile {
 		return nil
 	}
 	return &SerializableProfile{
-		ID:        p.ID,
-		Name:      p.Name,
-		Gender:    p.Gender,
-		Birthday:  p.Birthday,
-		Height:    p.Height,
-		Horoscope: p.Horoscope,
-		Hobby:     strings.Split(p.Hobby, ","),
-		Language:  strings.Split(p.Language, ","),
-		Education: p.Education,
-		HomeTown:  p.HomeTown,
-		Image1:    p.ImageUrl1,
-		Image2:    p.ImageUrl2,
-		Image3:    p.ImageUrl3,
-		Image4:    p.ImageUrl4,
-		Image5:    p.ImageUrl5,
+		ID:                p.ID,
+		Name:              p.Name,
+		Gender:            p.Gender,
+		BirthdayInSeconds: p.Birthday.Unix(),
+		Height:            p.Height,
+		Horoscope:         p.Horoscope,
+		Hobby:             strings.Split(p.Hobby, ","),
+		Language:          strings.Split(p.Language, ","),
+		Education:         p.Education,
+		HomeTown:          p.HomeTown,
+		Image1:            p.ImageUrl1,
+		Image2:            p.ImageUrl2,
+		Image3:            p.ImageUrl3,
+		Image4:            p.ImageUrl4,
+		Image5:            p.ImageUrl5,
 	}
 }
 
@@ -89,22 +89,22 @@ func (p *Profile) ConvertToMatchProfile() *MatchProfile {
 }
 
 type SerializableProfile struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Gender    string    `json:"gender"`
-	Birthday  time.Time `json:"birthday"`
-	Height    int       `json:"height"`
-	Horoscope string    `json:"horoscope"`
-	Hobby     []string  `json:"hobby"`
-	Language  []string  `json:"language"`
-	Education string    `json:"education"`
-	Location  string    `json:"location"`
-	HomeTown  string    `json:"home_town"`
-	Image1    string    `json:"image_1"`
-	Image2    string    `json:"image_2"`
-	Image3    string    `json:"image_3"`
-	Image4    string    `json:"image_4"`
-	Image5    string    `json:"image_5"`
+	ID                string   `json:"id"`
+	Name              string   `json:"name"`
+	Gender            string   `json:"gender"`
+	BirthdayInSeconds int64    `json:"birthday_in_seconds"`
+	Height            int      `json:"height"`
+	Horoscope         string   `json:"horoscope"`
+	Hobby             []string `json:"hobby"`
+	Language          []string `json:"language"`
+	Education         string   `json:"education"`
+	Location          string   `json:"location"`
+	HomeTown          string   `json:"home_town"`
+	Image1            string   `json:"image_1"`
+	Image2            string   `json:"image_2"`
+	Image3            string   `json:"image_3"`
+	Image4            string   `json:"image_4"`
+	Image5            string   `json:"image_5"`
 }
 
 type MatchProfile struct {
