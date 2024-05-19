@@ -17,16 +17,23 @@ import (
 )
 
 type ProfileController struct {
-	service services.IProfileService
-	ik      *core.ImageKit
-	logger  *core.Logger
+	service          services.IProfileService
+	recommendService services.IRecommendService
+	ik               *core.ImageKit
+	logger           *core.Logger
 }
 
-func NewProfileController(service services.IProfileService, ik *core.ImageKit, logger *core.Logger) *ProfileController {
+func NewProfileController(
+	service services.IProfileService,
+	recommendService services.IRecommendService,
+	ik *core.ImageKit,
+	logger *core.Logger,
+) *ProfileController {
 	return &ProfileController{
-		service: service,
-		ik:      ik,
-		logger:  logger,
+		service:          service,
+		recommendService: recommendService,
+		ik:               ik,
+		logger:           logger,
 	}
 }
 
@@ -100,9 +107,25 @@ func (c *ProfileController) GetMyProfile(ctx *gin.Context) {
 		return
 	}
 
+	answered := 1
+	_, err = c.recommendService.GetAnswersByUserId(userID)
+	if err != nil {
+		if err.Error() == "user answers not found" {
+			answered = 0
+		} else {
+			ctx.JSON(http.StatusInternalServerError, models.HTTPResponse{
+				Message: "server error",
+			})
+			return
+		}
+	}
+
+	serializeProfile := result.Serialize()
+	serializeProfile.Answered = answered
+
 	ctx.JSON(http.StatusOK, models.HTTPResponse{
 		Message: "success",
-		Data:    result.Serialize(),
+		Data:    serializeProfile,
 	})
 }
 

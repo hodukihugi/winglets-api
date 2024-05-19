@@ -82,7 +82,7 @@ func (c *AuthController) SignIn(ctx *gin.Context) {
 	}
 
 	if user.VerificationStatus == 0 {
-		ctx.JSON(http.StatusBadRequest, models.HTTPResponse{
+		ctx.JSON(http.StatusOK, models.HTTPResponse{
 			Message: "email is not verified",
 		})
 		return

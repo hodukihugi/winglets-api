@@ -105,6 +105,7 @@ type SerializableProfile struct {
 	Image3            string   `json:"image_3"`
 	Image4            string   `json:"image_4"`
 	Image5            string   `json:"image_5"`
+	Answered          int      `json:"answered"`
 }
 
 type MatchProfile struct {
